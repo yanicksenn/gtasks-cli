@@ -14,6 +14,25 @@ bazel build //go/cmd/todo:todo
 
 This will create a binary at `bazel-bin/go/cmd/todo/todo_/todo`.
 
+### Valid TODO Format
+
+The tool validates TODOs based on a specific format. A TODO is considered valid if it follows these rules:
+
+1.  It must start with the language's line comment marker (e.g., `//` for Go, `#` for Python).
+2.  It must contain the uppercase `TODO:` keyword, followed by a space.
+3.  The TODO message must end with a period (`.`).
+
+**Example of a valid TODO in Go:**
+```go
+// TODO: This is a valid todo.
+```
+
+**Examples of invalid TODOs:**
+```go
+// todo: This is invalid because of the lowercase 'todo'.
+// TODO: This is invalid because it is missing a period
+```
+
 ### Usage
 
 To run the tool, you can use the following command:
