@@ -74,21 +74,39 @@ func main() {
 
 		scanner := bufio.NewScanner(file)
 		lineNumber := 0
+		var currentTodo *Todo
 		for scanner.Scan() {
 			lineNumber++
 			line := scanner.Text()
 			matches := todoRegex.FindStringSubmatch(line)
 
-			if len(matches) > 2 {
+			if len(matches) > 2 { // Found a new TODO
+				if currentTodo != nil && strings.HasSuffix(currentTodo.Message, ".") {
+					todos = append(todos, *currentTodo)
+				}
 				message := strings.TrimSpace(matches[2])
-				if strings.HasSuffix(message, ".") {
-					todos = append(todos, Todo{
-						File:    path,
-						Line:    lineNumber,
-						Message: message,
-					})
+				currentTodo = &Todo{
+					File:    path,
+					Line:    lineNumber,
+					Message: message,
+				}
+			} else if currentTodo != nil { // Potentially part of a multi-line TODO
+				trimmedLine := strings.TrimSpace(line)
+				// Simple heuristic: if the line is a comment, append it.
+				if strings.HasPrefix(trimmedLine, "//") || strings.HasPrefix(trimmedLine, "#") {
+					currentTodo.Message += " " + strings.TrimSpace(strings.TrimPrefix(strings.TrimPrefix(trimmedLine, "//"), "#"))
+				} else {
+					// Not a comment, so the multi-line TODO ends here.
+					if strings.HasSuffix(currentTodo.Message, ".") {
+						todos = append(todos, *currentTodo)
+					}
+					currentTodo = nil
 				}
 			}
+		}
+		// Add the last todo if it exists
+		if currentTodo != nil && strings.HasSuffix(currentTodo.Message, ".") {
+			todos = append(todos, *currentTodo)
 		}
 		return nil
 	})
