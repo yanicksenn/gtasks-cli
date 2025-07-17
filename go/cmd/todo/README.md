@@ -55,34 +55,57 @@ If no directory is specified, it will search the current directory.
 
 #### Examples
 
-- Find all TODOs in the current directory and its subdirectories:
+- Find all TODOs in the `go/cmd/todo/testdata/simple` directory and its subdirectories:
 
 ```bash
-./bazel-bin/go/cmd/todo/todo_/todo
+./bazel-bin/go/cmd/todo/todo_/todo go/cmd/todo/testdata/simple
+```
+Output:
+```
+go/cmd/todo/testdata/simple/test.go:3: This is a valid todo.
 ```
 
-- Find all TODOs in the `go/` directory and display them in an aggregated view:
+- Find all TODOs in the `go/cmd/todo/testdata/aggregated` directory and display them in an aggregated view:
 
 ```bash
-./bazel-bin/go/cmd/todo/todo_/todo --aggregated go/
+./bazel-bin/go/cmd/todo/todo_/todo --aggregated go/cmd/todo/testdata/aggregated
+```
+Output:
+```
+go/cmd/todo/testdata/aggregated/test.go: 2 TODOs
+go/cmd/todo/testdata/aggregated/test.py: 1 TODOs
 ```
 
-- Validate all TODOs in the current directory:
+- Validate all TODOs in the `go/cmd/todo/testdata/validation-invalid` directory:
 
 ```bash
-./bazel-bin/go/cmd/todo/todo_/todo --validate
+./bazel-bin/go/cmd/todo/todo_/todo --validate go/cmd/todo/testdata/validation-invalid
+```
+Output:
+```
+Invalid TODOs found:
+go/cmd/todo/testdata/validation-invalid/test.go:2: [Use uppercase 'TODO:'.] // todo: this is invalid because it is lowercase.
+go/cmd/todo/testdata/validation-invalid/test.go:3: [Missing trailing period.] // TODO: This is invalid because it is missing a period
 ```
 
-- Validate all TODOs in the current directory and show the result in an aggregated view if the validation passes:
+- Validate all TODOs in the `go/cmd/todo/testdata/validation-aggregated-valid-only` directory and show the result in an aggregated view if the validation passes:
 
 ```bash
-./bazel-bin/go/cmd/todo/todo_/todo --validate --aggregated
+./bazel-bin/go/cmd/todo/todo_/todo --validate --aggregated go/cmd/todo/testdata/validation-aggregated-valid-only
+```
+Output:
+```
+go/cmd/todo/testdata/validation-aggregated-valid-only/test.go: 2 TODOs
 ```
 
-- Validate all TODOs in the current directory and suppress the output of invalid TODOs:
+- Validate all TODOs in the `go/cmd/todo/testdata/validation-quiet-invalid` directory and suppress the output of invalid TODOs:
 
 ```bash
-./bazel-bin/go/cmd/todo/todo_/todo --validate --quiet
+./bazel-bin/go/cmd/todo/todo_/todo --validate --quiet go/cmd/todo/testdata/validation-quiet-invalid
+```
+Output:
+```
+(no output, exit code 1)
 ```
 
 ## Engineering Overview
