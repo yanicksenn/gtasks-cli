@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func main() {
@@ -26,13 +27,29 @@ func main() {
 	fmt.Printf("Searching for TODOs in: %s\n", absPath)
 
 	err = filepath.WalkDir(absPath, func(path string, d fs.DirEntry, err error) error {
+		// Handle potential errors walking the path
 		if err != nil {
-			// If we can't access a path, report it and skip it.
 			fmt.Fprintf(os.Stderr, "Error accessing path %q: %v\n", path, err)
-			return nil
+			return nil // Continue walking
 		}
 
-		// Skip directories.
+		// Heuristic to skip common ignored directories and hidden files/dirs
+		if d.IsDir() {
+			dirName := d.Name()
+			if dirName == ".git" || dirName == ".hg" || dirName == "node_modules" || strings.HasPrefix(dirName, "bazel-") {
+				return filepath.SkipDir // Skip this directory and all its contents
+			}
+		}
+		
+		// Skip all hidden files and directories (e.g. .DS_Store, .idea)
+		if strings.HasPrefix(d.Name(), ".") && d.Name() != "." {
+			if d.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil // Skip hidden file
+		}
+
+		// We only want to parse files, not directories
 		if d.IsDir() {
 			return nil
 		}
