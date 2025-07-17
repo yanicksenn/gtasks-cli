@@ -19,15 +19,20 @@ This will create a binary at `bazel-bin/go/cmd/todo/todo_/todo`.
 To run the tool, you can use the following command:
 
 ```bash
-./bazel-bin/go/cmd/todo/todo_/todo [flags] [directory]
+./bazel-bin/go/cmd/todo/todo_/todo [command] [flags] [directory]
 ```
 
 If no directory is specified, it will search the current directory.
 
+#### Commands
+
+- `help`: Display the help message.
+
 #### Flags
 
-- `--aggregated`: Display TODOs in an aggregated view by file.
+- `--aggregated`: Group TODOs by file and display the count for each file. Can be combined with `--validate`.
 - `--validate`: Validate TODO format and exit with an error if invalid TODOs are found.
+- `--quiet`: Suppress output of invalid TODOs when validating. Only works with `--validate`.
 
 #### Examples
 
@@ -47,6 +52,18 @@ If no directory is specified, it will search the current directory.
 
 ```bash
 ./bazel-bin/go/cmd/todo/todo_/todo --validate
+```
+
+- Validate all TODOs in the current directory and show the result in an aggregated view if the validation passes:
+
+```bash
+./bazel-bin/go/cmd/todo/todo_/todo --validate --aggregated
+```
+
+- Validate all TODOs in the current directory and suppress the output of invalid TODOs:
+
+```bash
+./bazel-bin/go/cmd/todo/todo_/todo --validate --quiet
 ```
 
 ## Engineering Overview
