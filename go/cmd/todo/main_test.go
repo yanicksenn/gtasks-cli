@@ -68,12 +68,15 @@ func TestTodoCLI(t *testing.T) {
 
 			// Handle exit code validation
 			if strings.Contains(c.Name(), "validation") {
-				hasContent := len(expectedOutput) > 0
-				if hasContent && runErr == nil {
-					t.Fatalf("Expected a non-zero exit code for validation test, but got nil")
-				}
-				if !hasContent && runErr != nil {
-					t.Fatalf("Expected a zero exit code for validation test, but got: %v", runErr)
+				shouldFail := strings.Contains(c.Name(), "invalid")
+				if shouldFail {
+					if runErr == nil {
+						t.Fatalf("Expected a non-zero exit code for validation test, but got nil")
+					}
+				} else {
+					if runErr != nil {
+						t.Fatalf("Expected a zero exit code for validation test, but got: %v", runErr)
+					}
 				}
 			} else {
 				if runErr != nil {
