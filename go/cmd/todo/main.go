@@ -40,8 +40,15 @@ type FileTodoCount struct {
 }
 
 func main() {
-		aggregated := flag.Bool("aggregated", false, "Group TODOs by file and display the count for each file.")
+	aggregated := flag.Bool("aggregated", false, "Group TODOs by file and display the count for each file.")
 	validate := flag.Bool("validate", false, "Validate TODO format and exit with an error if invalid TODOs are found.")
+
+	if len(os.Args) > 1 && os.Args[1] == "help" {
+		fmt.Println("Usage: todo [flags] [directory]")
+		flag.PrintDefaults()
+		os.Exit(0)
+	}
+
 	searchDir := "."
 	flag.Parse()
 	if flag.NArg() > 0 {
