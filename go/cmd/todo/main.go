@@ -12,6 +12,20 @@ import (
 	"strings"
 )
 
+var (
+	// Maps file extensions to their single-line comment markers.
+	lineCommentMarkers = map[string]string{
+		".go":   "//",
+		".py":   "#",
+		".js":   "//",
+		".ts":   "//",
+		".java": "//",
+		".rs":   "//",
+		".sh":   "#",
+		".rb":   "#",
+	}
+)
+
 // Todo represents a single TODO item found in the codebase.
 type Todo struct {
 	File    string
@@ -34,7 +48,6 @@ func main() {
 	}
 
 	var todos []Todo
-	todoRegex := regexp.MustCompile(`^\s*(//|#)\s*TODO:\s*(.*)`)
 
 	err = filepath.WalkDir(absPath, func(path string, d fs.DirEntry, err error) error {
 		// Handle potential errors walking the path
@@ -64,6 +77,13 @@ func main() {
 			return nil
 		}
 
+		// Determine the comment marker based on file extension.
+		ext := filepath.Ext(path)
+		marker, supported := lineCommentMarkers[ext]
+		if !supported {
+			return nil // Skip files with unsupported extensions.
+		}
+
 		// Now, parse the file for TODOs
 		file, err := os.Open(path)
 		if err != nil {
@@ -72,6 +92,8 @@ func main() {
 		}
 		defer file.Close()
 
+		todoRegex := regexp.MustCompile(fmt.Sprintf(`^\s*%s\s*TODO:\s*(.*)`, regexp.QuoteMeta(marker)))
+		
 		scanner := bufio.NewScanner(file)
 		lineNumber := 0
 		var currentTodo *Todo
@@ -80,11 +102,11 @@ func main() {
 			line := scanner.Text()
 			matches := todoRegex.FindStringSubmatch(line)
 
-			if len(matches) > 2 { // Found a new TODO
+			if len(matches) > 1 { // Found a new TODO
 				if currentTodo != nil && strings.HasSuffix(currentTodo.Message, ".") {
 					todos = append(todos, *currentTodo)
 				}
-				message := strings.TrimSpace(matches[2])
+				message := strings.TrimSpace(matches[1])
 				currentTodo = &Todo{
 					File:    path,
 					Line:    lineNumber,
@@ -93,8 +115,8 @@ func main() {
 			} else if currentTodo != nil { // Potentially part of a multi-line TODO
 				trimmedLine := strings.TrimSpace(line)
 				// Simple heuristic: if the line is a comment, append it.
-				if strings.HasPrefix(trimmedLine, "//") || strings.HasPrefix(trimmedLine, "#") {
-					currentTodo.Message += " " + strings.TrimSpace(strings.TrimPrefix(strings.TrimPrefix(trimmedLine, "//"), "#"))
+				if strings.HasPrefix(trimmedLine, marker) {
+					currentTodo.Message += " " + strings.TrimSpace(strings.TrimPrefix(trimmedLine, marker))
 				} else {
 					// Not a comment, so the multi-line TODO ends here.
 					if strings.HasSuffix(currentTodo.Message, ".") {
