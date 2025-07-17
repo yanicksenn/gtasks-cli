@@ -4,7 +4,7 @@ This is a command-line tool for finding and validating TODO comments in source c
 
 ## User Overview
 
-### Installation
+### Building
 
 To build the tool, run the following command from the root of the repository:
 
