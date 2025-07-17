@@ -1,0 +1,11 @@
+"Bazel dependencies"
+
+# See https://registry.bazel.build/ registry.
+bazel_dep(name = "rules_proto", version = "7.1.0")
+bazel_dep(name = "rules_python", version = "1.1.0")
+bazel_dep(name = "rules_go", version = "0.51.0")
+bazel_dep(name = "protobuf", version = "29.0")
+
+register_toolchains(
+    "//toolchains:py_toolchain",
+)

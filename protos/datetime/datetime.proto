@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.yanicksenn.protos";
+
+message Date {
+  int64 year = 1;
+  int32 month = 2;
+  int32 day = 3;
+}
+
+message Time {
+  int32 hours = 1;
+  int32 minutes = 2;
+  int32 seconds = 3;
+  int32 nanos = 4;
+}
+
+message Instant {
+  Date date = 1;
+  Time time = 2;
+}
+
+message Timestamp {
+  int64 seconds = 1;
+  int32 nanos = 2;
+}
+
+message FormattingOptions {
+  TimeFormattingOptions time = 1;
+}
+
+message TimeFormattingOptions {
+  Precision precision = 1;
+
+  enum Precision {
+    NANOS = 0;
+    MICROS = 1;
+    MILLIS = 2;
+    SECONDS = 3;
+    MINUTES = 4;
+  }
+}

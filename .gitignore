@@ -1,0 +1,18 @@
+# MacOSx
+.DS_Store
+
+# Bazel
+bazel-*
+
+# Visual Studio Code
+.vscode
+
+# IntelliJ
+.idea
+.ijwb
+
+# Mercurial
+.hg
+
+# Personal
+source_personal.sh
