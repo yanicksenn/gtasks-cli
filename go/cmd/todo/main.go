@@ -67,6 +67,10 @@ func main() {
 		log.Fatalf("Error walking directory %q: %v", absPath, err)
 	}
 
+	if *quiet && !*validate {
+		fmt.Fprintln(os.Stderr, "Warning: --quiet flag has no effect without --validate.")
+	}
+
 	if *validate {
 		if len(invalidTodos) > 0 {
 			if !*quiet {
