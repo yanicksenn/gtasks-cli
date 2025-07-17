@@ -1,7 +1,27 @@
-load("@rules_go//go:def.bzl", "go_binary")
+load("@rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+
+go_library(
+    name = "todo_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/gemini-cli/todo/cmd/todo",
+    visibility = ["//visibility:private"],
+)
 
 go_binary(
     name = "todo",
-    srcs = ["main.go"],
+    embed = [":todo_lib"],
     visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "todo_test",
+    srcs = ["main_test.go"],
+    embed = [":todo_lib"],
+    data = [
+        ":todo",
+        "testdata",
+    ],
+    deps = [
+        "@rules_go//go/tools/bazel:go_default_library",
+    ],
 )

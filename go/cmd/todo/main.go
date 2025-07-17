@@ -15,20 +15,11 @@ import (
 )
 
 var (
-	// Maps file extensions to their single-line comment markers.
 	lineCommentMarkers = map[string]string{
-		".go":   "//",
-		".py":   "#",
-		".js":   "//",
-		".ts":   "//",
-		".java": "//",
-		".rs":   "//",
-		".sh":   "#",
-		".rb":   "#",
+		".go": "//", ".py": "#", ".js": "//", ".ts": "//", ".java": "//", ".rs": "//", ".sh": "#", ".rb": "#",
 	}
 )
 
-// Todo represents a single TODO item found in the codebase.
 type Todo struct {
 	File    string
 	Line    int
@@ -36,119 +27,78 @@ type Todo struct {
 	ModTime time.Time
 }
 
-// FileTodoCount holds the count of TODOs for a single file.
+type InvalidTodo struct {
+	File    string
+	Line    int
+	Content string
+	Reason  string
+}
+
 type FileTodoCount struct {
 	File  string
 	Count int
 }
 
 func main() {
-	// CLI Flags
 	aggregated := flag.Bool("aggregated", false, "Display TODOs in an aggregated view by file.")
-	
-	// By default, search the current directory. This can be overridden by a command-line argument.
+	validate := flag.Bool("validate", false, "Validate TODO format and exit with an error if invalid TODOs are found.")
 	searchDir := "."
 	flag.Parse()
 	if flag.NArg() > 0 {
 		searchDir = flag.Arg(0)
 	}
 
-	// Convert to an absolute path for cleaner output.
 	absPath, err := filepath.Abs(searchDir)
 	if err != nil {
 		log.Fatalf("Error getting absolute path for %q: %v", searchDir, err)
 	}
 
 	todosByFile := make(map[string][]Todo)
+	var invalidTodos []InvalidTodo
 
 	err = filepath.WalkDir(absPath, func(path string, d fs.DirEntry, err error) error {
-		// Handle potential errors walking the path
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error accessing path %q: %v\n", path, err)
-			return nil // Continue walking
-		}
-
-		// Heuristic to skip common ignored directories and hidden files/dirs
+		if err != nil { return nil }
 		if d.IsDir() {
 			dirName := d.Name()
-			if dirName == ".git" || dirName == ".hg" || dirName == "node_modules" || strings.HasPrefix(dirName, "bazel-") {
-				return filepath.SkipDir // Skip this directory and all its contents
-			}
-		}
-		
-		// Skip all hidden files and directories (e.g. .DS_Store, .idea)
-		if strings.HasPrefix(d.Name(), ".") && d.Name() != "." {
-			if d.IsDir() {
+			if dirName == ".git" || dirName == ".hg" || dirName == "node_modules" || strings.HasPrefix(dirName, "bazel-") || (strings.HasPrefix(dirName, ".") && dirName != ".") {
 				return filepath.SkipDir
 			}
-			return nil // Skip hidden file
-		}
-
-		// We only want to parse files, not directories
-		if d.IsDir() {
 			return nil
 		}
+		if strings.HasPrefix(d.Name(), ".") { return nil }
 
-		// Determine the comment marker based on file extension.
-		ext := filepath.Ext(path)
-		marker, supported := lineCommentMarkers[ext]
-		if !supported {
-			return nil // Skip files with unsupported extensions.
-		}
+		marker, supported := lineCommentMarkers[filepath.Ext(path)]
+		if !supported { return nil }
 
-		fileInfo, err := d.Info()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error getting file info for %q: %v\n", path, err)
-			return nil
-		}
+		fileInfo, _ := d.Info()
 		modTime := fileInfo.ModTime()
-
-		// Now, parse the file for TODOs
-		file, err := os.Open(path)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error opening file %q: %v\n", path, err)
-			return nil
-		}
+		file, _ := os.Open(path)
 		defer file.Close()
 
-		todoRegex := regexp.MustCompile(fmt.Sprintf(`^\s*%s\s*TODO:\s*(.*)`, regexp.QuoteMeta(marker)))
-		
-		scanner := bufio.NewScanner(file)
-		lineNumber := 0
-		var currentTodo *Todo
-		for scanner.Scan() {
-			lineNumber++
-			line := scanner.Text()
-			matches := todoRegex.FindStringSubmatch(line)
+		lenientTodoRegex := regexp.MustCompile(fmt.Sprintf(`(?i)^\s*%s.*todo`, regexp.QuoteMeta(marker)))
+		validTodoRegex := regexp.MustCompile(fmt.Sprintf(`^\s*%s\s*TODO:\s*(.*)\s*\.`, regexp.QuoteMeta(marker)))
 
-			if len(matches) > 1 { // Found a new TODO
-				if currentTodo != nil && strings.HasSuffix(currentTodo.Message, ".") {
-					todosByFile[currentTodo.File] = append(todosByFile[currentTodo.File], *currentTodo)
-				}
-				message := strings.TrimSpace(matches[1])
-				currentTodo = &Todo{
-					File:    path,
-					Line:    lineNumber,
-					Message: message,
-					ModTime: modTime,
-				}
-			} else if currentTodo != nil { // Potentially part of a multi-line TODO
-				trimmedLine := strings.TrimSpace(line)
-				// Simple heuristic: if the line is a comment, append it.
-				if strings.HasPrefix(trimmedLine, marker) {
-					currentTodo.Message += " " + strings.TrimSpace(strings.TrimPrefix(trimmedLine, marker))
-				} else {
-					// Not a comment, so the multi-line TODO ends here.
-					if strings.HasSuffix(currentTodo.Message, ".") {
-						todosByFile[currentTodo.File] = append(todosByFile[currentTodo.File], *currentTodo)
-					}
-					currentTodo = nil
-				}
+		scanner := bufio.NewScanner(file)
+		for i := 1; scanner.Scan(); i++ {
+			line := scanner.Text()
+			if !lenientTodoRegex.MatchString(line) {
+				continue
 			}
-		}
-		// Add the last todo if it exists
-		if currentTodo != nil && strings.HasSuffix(currentTodo.Message, ".") {
-			todosByFile[currentTodo.File] = append(todosByFile[currentTodo.File], *currentTodo)
+			if matches := validTodoRegex.FindStringSubmatch(line); len(matches) > 1 {
+				todosByFile[path] = append(todosByFile[path], Todo{
+					File: path, Line: i, Message: strings.TrimSpace(matches[1]), ModTime: modTime,
+				})
+			} else {
+				reason := "Invalid format."
+				if !strings.Contains(line, "TODO:") {
+					reason = "Use uppercase 'TODO:'."
+				} else if !strings.HasSuffix(strings.TrimSpace(line), ".") {
+					reason = "Missing trailing period."
+				}
+				invalidTodos = append(invalidTodos, InvalidTodo{
+					File: path, Line: i, Content: strings.TrimSpace(line), Reason: reason,
+				})
+			}
 		}
 		return nil
 	})
@@ -157,42 +107,49 @@ func main() {
 		log.Fatalf("Error walking directory %q: %v", absPath, err)
 	}
 
+	if *validate {
+		if len(invalidTodos) > 0 {
+			printInvalid(invalidTodos, absPath)
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}
+
 	if *aggregated {
-		printAggregated(todosByFile)
+		printAggregated(todosByFile, absPath)
 	} else {
-		printStandard(todosByFile)
+		printStandard(todosByFile, absPath)
 	}
 }
 
-func printStandard(todosByFile map[string][]Todo) {
+func printStandard(todosByFile map[string][]Todo, searchDir string) {
 	var allTodos []Todo
 	for _, todos := range todosByFile {
 		allTodos = append(allTodos, todos...)
 	}
-
-	// Sort the todos by modification time (newest first).
-	sort.Slice(allTodos, func(i, j int) bool {
-		return allTodos[i].ModTime.After(allTodos[j].ModTime)
-	})
-
-	// Print all found TODOs
+	sort.Slice(allTodos, func(i, j int) bool { return allTodos[i].ModTime.After(allTodos[j].ModTime) })
 	for _, todo := range allTodos {
-		fmt.Printf("%s:%d: %s\n", todo.File, todo.Line, todo.Message)
+		relPath, _ := filepath.Rel(searchDir, todo.File)
+		fmt.Printf("%s:%d: %s\n", relPath, todo.Line, todo.Message)
 	}
 }
 
-func printAggregated(todosByFile map[string][]Todo) {
+func printAggregated(todosByFile map[string][]Todo, searchDir string) {
 	counts := make([]FileTodoCount, 0, len(todosByFile))
 	for file, todos := range todosByFile {
 		counts = append(counts, FileTodoCount{File: file, Count: len(todos)})
 	}
-
-	// Sort by count (most first)
-	sort.Slice(counts, func(i, j int) bool {
-		return counts[i].Count > counts[j].Count
-	})
-
+	sort.Slice(counts, func(i, j int) bool { return counts[i].Count > counts[j].Count })
 	for _, item := range counts {
-		fmt.Printf("%s: %d TODOs\n", item.File, item.Count)
+		relPath, _ := filepath.Rel(searchDir, item.File)
+		fmt.Printf("%s: %d TODOs\n", relPath, item.Count)
+	}
+}
+
+func printInvalid(invalidTodos []InvalidTodo, searchDir string) {
+	fmt.Print("Invalid TODOs found:\n")
+	for _, todo := range invalidTodos {
+		relPath, _ := filepath.Rel(searchDir, todo.File)
+		fmt.Printf("%s:%d: [%s] %s\n", relPath, todo.Line, todo.Reason, todo.Content)
 	}
 }
