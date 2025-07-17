@@ -63,7 +63,6 @@ func main() {
 			printInvalid(invalidTodos, absPath)
 			os.Exit(1)
 		}
-		os.Exit(0)
 	}
 
 	if *aggregated {
