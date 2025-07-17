@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -74,6 +75,18 @@ func TestTodoCLI(t *testing.T) {
 
 			if expectedOutputStr != actualOutput {
 				t.Errorf("Output does not match expected.out.\nExpected:\n---\n%s\n---\nActual:\n---\n%s\n---", expectedOutputStr, actualOutput)
+			}
+
+			if _, err := os.Stat(filepath.Join(caseDir, "expected.err")); err == nil {
+				expectedErr, err := ioutil.ReadFile(filepath.Join(caseDir, "expected.err"))
+				if err != nil {
+					t.Fatalf("Could not read expected.err: %v", err)
+				}
+				actualErr := strings.TrimSpace(stderr.String())
+				expectedErrStr := strings.TrimSpace(string(expectedErr))
+				if expectedErrStr != actualErr {
+					t.Errorf("Stderr does not match expected.err.\nExpected:\n---\n%s\n---\nActual:\n---\n%s\n---", expectedErrStr, actualErr)
+				}
 			}
 
 			// Handle exit code validation
