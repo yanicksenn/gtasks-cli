@@ -9,7 +9,9 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
+	"time"
 )
 
 var (
@@ -31,6 +33,7 @@ type Todo struct {
 	File    string
 	Line    int
 	Message string
+	ModTime time.Time
 }
 
 func main() {
@@ -84,6 +87,13 @@ func main() {
 			return nil // Skip files with unsupported extensions.
 		}
 
+		fileInfo, err := d.Info()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error getting file info for %q: %v\n", path, err)
+			return nil
+		}
+		modTime := fileInfo.ModTime()
+
 		// Now, parse the file for TODOs
 		file, err := os.Open(path)
 		if err != nil {
@@ -111,6 +121,7 @@ func main() {
 					File:    path,
 					Line:    lineNumber,
 					Message: message,
+					ModTime: modTime,
 				}
 			} else if currentTodo != nil { // Potentially part of a multi-line TODO
 				trimmedLine := strings.TrimSpace(line)
@@ -136,6 +147,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error walking directory %q: %v", absPath, err)
 	}
+
+	// Sort the todos by modification time (newest first).
+	sort.Slice(todos, func(i, j int) bool {
+		return todos[i].ModTime.After(todos[j].ModTime)
+	})
 
 	// Print all found TODOs
 	for _, todo := range todos {
