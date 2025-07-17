@@ -78,6 +78,12 @@ func main() {
 			}
 			os.Exit(1)
 		}
+		if *aggregated {
+			printAggregated(todosByFile, absPath)
+		} else {
+			printStandard(todosByFile, absPath)
+		}
+		os.Exit(0)
 	}
 
 	if *aggregated {
