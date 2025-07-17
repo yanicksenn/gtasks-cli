@@ -92,45 +92,72 @@ func findTodos(searchDir string) (map[string][]Todo, []InvalidTodo, error) {
 			return nil
 		}
 
-		marker, supported := lineCommentMarkers[filepath.Ext(path)]
-		if !supported {
+		todos, invalid, err := processFile(path)
+		if err != nil {
+			// Log error but continue walking
+			log.Printf("Error processing file %q: %v", path, err)
 			return nil
 		}
-
-		fileInfo, _ := d.Info()
-		modTime := fileInfo.ModTime()
-		file, _ := os.Open(path)
-		defer file.Close()
-
-		lenientTodoRegex := regexp.MustCompile(fmt.Sprintf(`(?i)^\s*%s.*todo`, regexp.QuoteMeta(marker)))
-		validTodoRegex := regexp.MustCompile(fmt.Sprintf(`^\s*%s\s*TODO:\s*(.*)\s*\.`, regexp.QuoteMeta(marker)))
-
-		scanner := bufio.NewScanner(file)
-		for i := 1; scanner.Scan(); i++ {
-			line := scanner.Text()
-			if !lenientTodoRegex.MatchString(line) {
-				continue
-			}
-			if matches := validTodoRegex.FindStringSubmatch(line); len(matches) > 1 {
-				todosByFile[path] = append(todosByFile[path], Todo{
-					File: path, Line: i, Message: strings.TrimSpace(matches[1]), ModTime: modTime,
-				})
-			} else {
-				reason := "Invalid format."
-				if !strings.Contains(line, "TODO:") {
-					reason = "Use uppercase 'TODO:'."
-				} else if !strings.HasSuffix(strings.TrimSpace(line), ".") {
-					reason = "Missing trailing period."
-				}
-				invalidTodos = append(invalidTodos, InvalidTodo{
-					File: path, Line: i, Content: strings.TrimSpace(line), Reason: reason,
-				})
-			}
+		if len(todos) > 0 {
+			todosByFile[path] = todos
+		}
+		if len(invalid) > 0 {
+			invalidTodos = append(invalidTodos, invalid...)
 		}
 		return nil
 	})
 
 	return todosByFile, invalidTodos, err
+}
+
+func processFile(path string) ([]Todo, []InvalidTodo, error) {
+	marker, supported := lineCommentMarkers[filepath.Ext(path)]
+	if !supported {
+		return nil, nil, nil
+	}
+
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return nil, nil, err
+	}
+	modTime := fileInfo.ModTime()
+
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer file.Close()
+
+	var todos []Todo
+	var invalidTodos []InvalidTodo
+
+	lenientTodoRegex := regexp.MustCompile(fmt.Sprintf(`(?i)^\s*%s.*todo`, regexp.QuoteMeta(marker)))
+	validTodoRegex := regexp.MustCompile(fmt.Sprintf(`^\s*%s\s*TODO:\s*(.*)\s*\.`, regexp.QuoteMeta(marker)))
+
+	scanner := bufio.NewScanner(file)
+	for i := 1; scanner.Scan(); i++ {
+		line := scanner.Text()
+		if !lenientTodoRegex.MatchString(line) {
+			continue
+		}
+		if matches := validTodoRegex.FindStringSubmatch(line); len(matches) > 1 {
+			todos = append(todos, Todo{
+				File: path, Line: i, Message: strings.TrimSpace(matches[1]), ModTime: modTime,
+			})
+		} else {
+			reason := "Invalid format."
+			if !strings.Contains(line, "TODO:") {
+				reason = "Use uppercase 'TODO:'."
+			} else if !strings.HasSuffix(strings.TrimSpace(line), ".") {
+				reason = "Missing trailing period."
+			}
+			invalidTodos = append(invalidTodos, InvalidTodo{
+				File: path, Line: i, Content: strings.TrimSpace(line), Reason: reason,
+			})
+		}
+	}
+
+	return todos, invalidTodos, nil
 }
 
 func printStandard(todosByFile map[string][]Todo, searchDir string) {
