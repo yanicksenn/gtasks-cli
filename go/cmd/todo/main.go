@@ -53,11 +53,34 @@ func main() {
 		log.Fatalf("Error getting absolute path for %q: %v", searchDir, err)
 	}
 
+	todosByFile, invalidTodos, err := findTodos(absPath)
+	if err != nil {
+		log.Fatalf("Error walking directory %q: %v", absPath, err)
+	}
+
+	if *validate {
+		if len(invalidTodos) > 0 {
+			printInvalid(invalidTodos, absPath)
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}
+
+	if *aggregated {
+		printAggregated(todosByFile, absPath)
+	} else {
+		printStandard(todosByFile, absPath)
+	}
+}
+
+func findTodos(searchDir string) (map[string][]Todo, []InvalidTodo, error) {
 	todosByFile := make(map[string][]Todo)
 	var invalidTodos []InvalidTodo
 
-	err = filepath.WalkDir(absPath, func(path string, d fs.DirEntry, err error) error {
-		if err != nil { return nil }
+	err := filepath.WalkDir(searchDir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return nil
+		}
 		if d.IsDir() {
 			dirName := d.Name()
 			if dirName == ".git" || dirName == ".hg" || dirName == "node_modules" || strings.HasPrefix(dirName, "bazel-") || (strings.HasPrefix(dirName, ".") && dirName != ".") {
@@ -65,10 +88,14 @@ func main() {
 			}
 			return nil
 		}
-		if strings.HasPrefix(d.Name(), ".") { return nil }
+		if strings.HasPrefix(d.Name(), ".") {
+			return nil
+		}
 
 		marker, supported := lineCommentMarkers[filepath.Ext(path)]
-		if !supported { return nil }
+		if !supported {
+			return nil
+		}
 
 		fileInfo, _ := d.Info()
 		modTime := fileInfo.ModTime()
@@ -103,23 +130,7 @@ func main() {
 		return nil
 	})
 
-	if err != nil {
-		log.Fatalf("Error walking directory %q: %v", absPath, err)
-	}
-
-	if *validate {
-		if len(invalidTodos) > 0 {
-			printInvalid(invalidTodos, absPath)
-			os.Exit(1)
-		}
-		os.Exit(0)
-	}
-
-	if *aggregated {
-		printAggregated(todosByFile, absPath)
-	} else {
-		printStandard(todosByFile, absPath)
-	}
+	return todosByFile, invalidTodos, err
 }
 
 func printStandard(todosByFile map[string][]Todo, searchDir string) {
