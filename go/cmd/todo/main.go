@@ -42,6 +42,7 @@ type FileTodoCount struct {
 func main() {
 	aggregated := flag.Bool("aggregated", false, "Group TODOs by file and display the count for each file.")
 	validate := flag.Bool("validate", false, "Validate TODO format and exit with an error if invalid TODOs are found.")
+	quiet := flag.Bool("quiet", false, "Suppress output of invalid TODOs when validating.")
 
 	if len(os.Args) > 1 && os.Args[1] == "help" {
 		flag.CommandLine.SetOutput(os.Stdout)
@@ -68,7 +69,9 @@ func main() {
 
 	if *validate {
 		if len(invalidTodos) > 0 {
-			printInvalid(invalidTodos, absPath)
+			if !*quiet {
+				printInvalid(invalidTodos, absPath)
+			}
 			os.Exit(1)
 		}
 	}

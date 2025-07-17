@@ -52,6 +52,9 @@ func TestTodoCLI(t *testing.T) {
 				if strings.Contains(c.Name(), "validation") {
 					args = append(args, "--validate")
 				}
+				if strings.Contains(c.Name(), "quiet") {
+					args = append(args, "--quiet")
+				}
 				args = append(args, caseDir)
 			}
 			cmd.Args = append(cmd.Args, args...)

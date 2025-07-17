@@ -1,5 +1,7 @@
 Usage: todo [flags] [directory]
   -aggregated
     	Group TODOs by file and display the count for each file.
+  -quiet
+    	Suppress output of invalid TODOs when validating.
   -validate
     	Validate TODO format and exit with an error if invalid TODOs are found.
