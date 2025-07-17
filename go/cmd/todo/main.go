@@ -179,7 +179,12 @@ func printStandard(todosByFile map[string][]Todo, searchDir string) {
 	for _, todos := range todosByFile {
 		allTodos = append(allTodos, todos...)
 	}
-	sort.Slice(allTodos, func(i, j int) bool { return allTodos[i].ModTime.After(allTodos[j].ModTime) })
+	sort.Slice(allTodos, func(i, j int) bool {
+		if allTodos[i].File != allTodos[j].File {
+			return allTodos[i].File < allTodos[j].File
+		}
+		return allTodos[i].Line < allTodos[j].Line
+	})
 	for _, todo := range allTodos {
 		relPath, _ := filepath.Rel(searchDir, todo.File)
 		fmt.Printf("%s:%d: %s\n", relPath, todo.Line, todo.Message)
