@@ -44,6 +44,7 @@ func main() {
 	validate := flag.Bool("validate", false, "Validate TODO format and exit with an error if invalid TODOs are found.")
 
 	if len(os.Args) > 1 && os.Args[1] == "help" {
+		flag.CommandLine.SetOutput(os.Stdout)
 		fmt.Println("Usage: todo [flags] [directory]")
 		flag.PrintDefaults()
 		os.Exit(0)

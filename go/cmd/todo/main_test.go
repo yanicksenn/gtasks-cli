@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"io/ioutil"
 	"os/exec"
 	"path/filepath"
@@ -35,19 +36,25 @@ func TestTodoCLI(t *testing.T) {
 		t.Run(c.Name(), func(t *testing.T) {
 			caseDir := filepath.Join(testdataDir, c.Name())
 			
-			args := []string{}
-			if strings.Contains(c.Name(), "aggregated") {
-				args = append(args, "--aggregated")
-			}
-			if strings.Contains(c.Name(), "validation") {
-				args = append(args, "--validate")
-			}
-			args = append(args, caseDir)
-
-			cmd := exec.Command(todoBinary, args...)
+			cmd := exec.Command(todoBinary)
 			var stdout, stderr bytes.Buffer
 			cmd.Stdout = &stdout
 			cmd.Stderr = &stderr
+
+			args := []string{}
+			if c.Name() == "help" {
+				args = append(args, "help")
+				flag.CommandLine.SetOutput(cmd.Stdout)
+			} else {
+				if strings.Contains(c.Name(), "aggregated") {
+					args = append(args, "--aggregated")
+				}
+				if strings.Contains(c.Name(), "validation") {
+					args = append(args, "--validate")
+				}
+				args = append(args, caseDir)
+			}
+			cmd.Args = append(cmd.Args, args...)
 
 			runErr := cmd.Run()
 
