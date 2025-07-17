@@ -1,14 +1,23 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
+
+// Todo represents a single TODO item found in the codebase.
+type Todo struct {
+	File    string
+	Line    int
+	Message string
+}
 
 func main() {
 	// By default, search the current directory. This can be overridden by a command-line argument.
@@ -24,7 +33,8 @@ func main() {
 		log.Fatalf("Error getting absolute path for %q: %v", searchDir, err)
 	}
 
-	fmt.Printf("Searching for TODOs in: %s\n", absPath)
+	var todos []Todo
+	todoRegex := regexp.MustCompile(`^\s*(//|#)\s*TODO:\s*(.*)`)
 
 	err = filepath.WalkDir(absPath, func(path string, d fs.DirEntry, err error) error {
 		// Handle potential errors walking the path
@@ -54,14 +64,41 @@ func main() {
 			return nil
 		}
 
-		// For now, just print the file path.
-		// Later, we will parse the file for TODOs here.
-		fmt.Println(path)
+		// Now, parse the file for TODOs
+		file, err := os.Open(path)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error opening file %q: %v\n", path, err)
+			return nil
+		}
+		defer file.Close()
 
+		scanner := bufio.NewScanner(file)
+		lineNumber := 0
+		for scanner.Scan() {
+			lineNumber++
+			line := scanner.Text()
+			matches := todoRegex.FindStringSubmatch(line)
+
+			if len(matches) > 2 {
+				message := strings.TrimSpace(matches[2])
+				if strings.HasSuffix(message, ".") {
+					todos = append(todos, Todo{
+						File:    path,
+						Line:    lineNumber,
+						Message: message,
+					})
+				}
+			}
+		}
 		return nil
 	})
 
 	if err != nil {
 		log.Fatalf("Error walking directory %q: %v", absPath, err)
+	}
+
+	// Print all found TODOs
+	for _, todo := range todos {
+		fmt.Printf("%s:%d: %s\n", todo.File, todo.Line, todo.Message)
 	}
 }
