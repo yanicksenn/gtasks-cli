@@ -36,7 +36,16 @@ type Todo struct {
 	ModTime time.Time
 }
 
+// FileTodoCount holds the count of TODOs for a single file.
+type FileTodoCount struct {
+	File  string
+	Count int
+}
+
 func main() {
+	// CLI Flags
+	aggregated := flag.Bool("aggregated", false, "Display TODOs in an aggregated view by file.")
+	
 	// By default, search the current directory. This can be overridden by a command-line argument.
 	searchDir := "."
 	flag.Parse()
@@ -50,7 +59,7 @@ func main() {
 		log.Fatalf("Error getting absolute path for %q: %v", searchDir, err)
 	}
 
-	var todos []Todo
+	todosByFile := make(map[string][]Todo)
 
 	err = filepath.WalkDir(absPath, func(path string, d fs.DirEntry, err error) error {
 		// Handle potential errors walking the path
@@ -114,7 +123,7 @@ func main() {
 
 			if len(matches) > 1 { // Found a new TODO
 				if currentTodo != nil && strings.HasSuffix(currentTodo.Message, ".") {
-					todos = append(todos, *currentTodo)
+					todosByFile[currentTodo.File] = append(todosByFile[currentTodo.File], *currentTodo)
 				}
 				message := strings.TrimSpace(matches[1])
 				currentTodo = &Todo{
@@ -131,7 +140,7 @@ func main() {
 				} else {
 					// Not a comment, so the multi-line TODO ends here.
 					if strings.HasSuffix(currentTodo.Message, ".") {
-						todos = append(todos, *currentTodo)
+						todosByFile[currentTodo.File] = append(todosByFile[currentTodo.File], *currentTodo)
 					}
 					currentTodo = nil
 				}
@@ -139,7 +148,7 @@ func main() {
 		}
 		// Add the last todo if it exists
 		if currentTodo != nil && strings.HasSuffix(currentTodo.Message, ".") {
-			todos = append(todos, *currentTodo)
+			todosByFile[currentTodo.File] = append(todosByFile[currentTodo.File], *currentTodo)
 		}
 		return nil
 	})
@@ -148,13 +157,42 @@ func main() {
 		log.Fatalf("Error walking directory %q: %v", absPath, err)
 	}
 
+	if *aggregated {
+		printAggregated(todosByFile)
+	} else {
+		printStandard(todosByFile)
+	}
+}
+
+func printStandard(todosByFile map[string][]Todo) {
+	var allTodos []Todo
+	for _, todos := range todosByFile {
+		allTodos = append(allTodos, todos...)
+	}
+
 	// Sort the todos by modification time (newest first).
-	sort.Slice(todos, func(i, j int) bool {
-		return todos[i].ModTime.After(todos[j].ModTime)
+	sort.Slice(allTodos, func(i, j int) bool {
+		return allTodos[i].ModTime.After(allTodos[j].ModTime)
 	})
 
 	// Print all found TODOs
-	for _, todo := range todos {
+	for _, todo := range allTodos {
 		fmt.Printf("%s:%d: %s\n", todo.File, todo.Line, todo.Message)
+	}
+}
+
+func printAggregated(todosByFile map[string][]Todo) {
+	counts := make([]FileTodoCount, 0, len(todosByFile))
+	for file, todos := range todosByFile {
+		counts = append(counts, FileTodoCount{File: file, Count: len(todos)})
+	}
+
+	// Sort by count (most first)
+	sort.Slice(counts, func(i, j int) bool {
+		return counts[i].Count > counts[j].Count
+	})
+
+	for _, item := range counts {
+		fmt.Printf("%s: %d TODOs\n", item.File, item.Count)
 	}
 }
