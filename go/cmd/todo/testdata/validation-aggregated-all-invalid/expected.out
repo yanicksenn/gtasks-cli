@@ -1,3 +1,0 @@
-Invalid TODOs found:
-test.go:3: [Use uppercase 'TODO:'.] // todo: This is an invalid todo.
-test.go:4: [Missing trailing period.] // TODO: This is another invalid todo
