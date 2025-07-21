@@ -45,7 +45,7 @@ This document outlines the development plan as a series of ordered milestones. W
   - [x] Implement the `gtasks accounts switch` command.
   - [x] Add offline tests for the account management logic.
 
-- [ ] **Milestone 8: End-to-End Testing**
-  - [ ] Set up the E2E test suite structure.
-  - [ ] Write E2E tests covering the main user flows for `tasklists` and `tasks`.
-  - [ ] Document how to run the E2E tests.
+- [x] **Milestone 8: End-to-End Testing**
+  - [x] Set up the E2E test suite structure.
+  - [x] Write E2E tests covering the main user flows for `tasklists` and `tasks`.
+  - [x] Document how to run the E2E tests.
