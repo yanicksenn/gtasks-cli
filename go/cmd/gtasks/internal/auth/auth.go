@@ -121,6 +121,33 @@ func (a *Authenticator) NewClient(ctx context.Context) (*http.Client, string, er
 	return client, userInfo.Email, nil
 }
 
+// Logout removes the token for the given user from the cache.
+func Logout(user string) error {
+	cache, err := loadTokenCache()
+	if err != nil {
+		return err
+	}
+
+	delete(cache.Tokens, user)
+
+	return cache.saveAll()
+}
+
+// ListAccounts lists all the accounts in the token cache.
+func ListAccounts() ([]string, error) {
+	cache, err := loadTokenCache()
+	if err != nil {
+		return nil, err
+	}
+
+	var accounts []string
+	for user := range cache.Tokens {
+		accounts = append(accounts, user)
+	}
+
+	return accounts, nil
+}
+
 // TokenCache represents the structure of the credentials file.
 type TokenCache struct {
 	Tokens map[string]*oauth2.Token `json:"tokens"`
@@ -151,7 +178,6 @@ func loadCredentials() (*Credentials, error) {
 	}
 	return &creds, nil
 }
-
 
 func getTokenCachePath() (string, error) {
 	home, err := os.UserHomeDir()
@@ -185,6 +211,10 @@ func loadTokenCache() (*TokenCache, error) {
 
 func (tc *TokenCache) save(user string, token *oauth2.Token) error {
 	tc.Tokens[user] = token
+	return tc.saveAll()
+}
+
+func (tc *TokenCache) saveAll() error {
 	path, err := getTokenCachePath()
 	if err != nil {
 		return err

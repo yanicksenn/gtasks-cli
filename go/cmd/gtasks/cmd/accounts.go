@@ -27,10 +27,10 @@ var loginCmd = &cobra.Command{
 			fmt.Println("https://developers.google.com/tasks/docs/create-credentials")
 			fmt.Println("\nOnce you have your credentials, please create a file at `~/.config/credentials.json` with the following format:")
 			fmt.Println(`{
-  "installed": {
-    "client_id": "YOUR_CLIENT_ID",
-    "client_secret": "YOUR_CLIENT_SECRET"
-  }
+"installed": {
+"client_id": "YOUR_CLIENT_ID",
+"client_secret": "YOUR_CLIENT_SECRET"
+}
 }`)
 			fmt.Fprintf(os.Stderr, "\nError: %v\n", err)
 			os.Exit(1)
@@ -58,7 +58,100 @@ var loginCmd = &cobra.Command{
 	},
 }
 
+var logoutCmd = &cobra.Command{
+	Use:   "logout",
+	Short: "Log out of the active account",
+	Run: func(cmd *cobra.Command, args []string) {
+		cfg, err := config.Load()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error loading config: %v\n", err)
+			os.Exit(1)
+		}
+
+		if err := auth.Logout(cfg.ActiveAccount); err != nil {
+			fmt.Fprintf(os.Stderr, "Error logging out: %v\n", err)
+			os.Exit(1)
+		}
+
+		fmt.Printf("Successfully logged out of %s.\n", cfg.ActiveAccount)
+		cfg.ActiveAccount = ""
+		if err := cfg.Save(); err != nil {
+			fmt.Fprintf(os.Stderr, "Error saving config: %v\n", err)
+			os.Exit(1)
+		}
+	},
+}
+
+var listAccountsCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List all authenticated accounts",
+	Run: func(cmd *cobra.Command, args []string) {
+		accounts, err := auth.ListAccounts()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error listing accounts: %v\n", err)
+			os.Exit(1)
+		}
+
+		if len(accounts) == 0 {
+			fmt.Println("No accounts authenticated.")
+			return
+		}
+
+		cfg, err := config.Load()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error loading config: %v\n", err)
+			os.Exit(1)
+		}
+
+		fmt.Println("Authenticated Accounts:")
+		for _, account := range accounts {
+			if account == cfg.ActiveAccount {
+				fmt.Printf("- %s (active)\n", account)
+			} else {
+				fmt.Printf("- %s\n", account)
+			}
+		}
+	},
+}
+
+var switchAccountCmd = &cobra.Command{
+	Use:   "switch [EMAIL]",
+	Short: "Switch to a different account",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		email := args[0]
+		accounts, err := auth.ListAccounts()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error listing accounts: %v\n", err)
+			os.Exit(1)
+		}
+
+		for _, account := range accounts {
+			if account == email {
+				cfg, err := config.Load()
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "Error loading config: %v\n", err)
+					os.Exit(1)
+				}
+				cfg.ActiveAccount = email
+				if err := cfg.Save(); err != nil {
+					fmt.Fprintf(os.Stderr, "Error saving config: %v\n", err)
+					os.Exit(1)
+				}
+				fmt.Printf("Successfully switched to %s.\n", email)
+				return
+			}
+		}
+
+		fmt.Fprintf(os.Stderr, "Account %s not found. Please log in first.\n", email)
+		os.Exit(1)
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(accountsCmd)
 	accountsCmd.AddCommand(loginCmd)
+	accountsCmd.AddCommand(logoutCmd)
+	accountsCmd.AddCommand(listAccountsCmd)
+	accountsCmd.AddCommand(switchAccountCmd)
 }

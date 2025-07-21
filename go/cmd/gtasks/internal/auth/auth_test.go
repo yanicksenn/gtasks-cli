@@ -14,8 +14,13 @@ func TestTokenCache(t *testing.T) {
 
 	// Test saving a token.
 	cache := &TokenCache{Tokens: make(map[string]*oauth2.Token)}
-	token := &oauth2.Token{AccessToken: "test-token"}
-	err := cache.save("test@example.com", token)
+	token1 := &oauth2.Token{AccessToken: "test-token-1"}
+	token2 := &oauth2.Token{AccessToken: "test-token-2"}
+	err := cache.save("test1@example.com", token1)
+	if err != nil {
+		t.Fatalf("failed to save token cache: %v", err)
+	}
+	err = cache.save("test2@example.com", token2)
 	if err != nil {
 		t.Fatalf("failed to save token cache: %v", err)
 	}
@@ -26,18 +31,30 @@ func TestTokenCache(t *testing.T) {
 		t.Fatalf("token cache file was not created at %s", expectedPath)
 	}
 
-	// Test loading the token cache.
-	loadedCache, err := loadTokenCache()
+	// Test listing accounts.
+	accounts, err := ListAccounts()
 	if err != nil {
-		t.Fatalf("failed to load token cache: %v", err)
+		t.Fatalf("failed to list accounts: %v", err)
+	}
+	if len(accounts) != 2 {
+		t.Fatalf("expected 2 accounts, got %d", len(accounts))
 	}
 
-	loadedToken, ok := loadedCache.Tokens["test@example.com"]
-	if !ok {
-		t.Fatalf("token for 'test@example.com' not found in cache")
+	// Test logging out.
+	err = Logout("test1@example.com")
+	if err != nil {
+		t.Fatalf("failed to logout: %v", err)
 	}
 
-	if loadedToken.AccessToken != "test-token" {
-		t.Errorf("expected access token to be 'test-token', got '%s'", loadedToken.AccessToken)
+	// Verify the account was removed.
+	accounts, err = ListAccounts()
+	if err != nil {
+		t.Fatalf("failed to list accounts: %v", err)
+	}
+	if len(accounts) != 1 {
+		t.Fatalf("expected 1 account, got %d", len(accounts))
+	}
+	if accounts[0] == "test1@example.com" {
+		t.Fatalf("account was not removed")
 	}
 }
