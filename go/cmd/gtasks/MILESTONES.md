@@ -8,12 +8,12 @@ This document outlines the development plan as a series of ordered milestones. W
   - [x] Add initial dependencies (`cobra`, `oauth2`, `google-api-go-client`).
   - [x] Set up the main application entry point (`main.go`) and the root Cobra command.
 
-- [ ] **Milestone 2: Core Authentication**
-  - [ ] Implement the `gtasks login` command.
-  - [ ] Implement the full OAuth2 web flow to retrieve a token.
-  - [ ] Implement secure token storage in the user's home directory.
-  - [ ] Implement the configuration logic to track the active user.
-  - [ ] Create offline tests for the auth and config logic.
+- [x] **Milestone 2: Core Authentication**
+  - [x] Implement the `gtasks login` command.
+  - [x] Implement the full OAuth2 web flow to retrieve a token.
+  - [x] Implement secure token storage in the user's home directory.
+  - [x] Implement the configuration logic to track the active user.
+  - [x] Create offline tests for the auth and config logic.
 
 - [ ] **Milestone 3: TaskList Read Operations**
   - [ ] Implement the `gtasks tasklists list` command.
