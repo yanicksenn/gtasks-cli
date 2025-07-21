@@ -6,13 +6,16 @@ A command-line interface (CLI) for managing your Google Tasks.
 
 - [1. Authentication](#1-authentication)
 - [2. Command Structure](#2-command-structure)
-- [3. Terminology](#3-terminology)
-- [4. Command Reference](#4-command-reference)
+- [3. Offline Mode](#3-offline-mode)
+- [4. Terminology](#4-terminology)
+- [5. Command Reference](#5-command-reference)
   - [Account Management](#account-management)
   - [TaskList Management](#tasklist-management)
   - [Task Management](#task-management)
-- [5. Implementation Details](#5-implementation-details)
-- [6. Project Documentation](#6-project-documentation)
+  - [Synchronization](#synchronization)
+- [6. Implementation Details](#6-implementation-details)
+- [7. Project Documentation](#7-project-documentation)
+- [8. Running Tests](#8-running-tests)
 
 ---
 
@@ -30,9 +33,15 @@ The CLI follows a `gtasks <resource> <action> [flags]` pattern.
 - **`resource`**: The type of object to operate on (e.g., `accounts`, `tasklists`, `tasks`).
 - **`action`**: The operation to perform (e.g., `list`, `create`, `get`, `update`, `delete`).
 
+## 3. Offline Mode
+
+`gtasks` supports a full offline mode. By using the global `--offline` flag, you can manage your tasks and task lists without an internet connection. All changes are saved to a local file (`~/.config/gtasks/offline.json`).
+
+When you are back online, you can use the `gtasks sync` command to push all your local changes to Google Tasks.
+
 ---
 
-## 3. Terminology
+## 4. Terminology
 
 - **Account:** Refers to the Google Account you authenticate with via the SSO sign-in flow. The CLI can cache multiple accounts, but only one is active at a time.
 - **TaskList:** A container for your tasks. A user can have multiple task lists to organize different areas of their life (e.g., "Work," "Groceries," "Personal Projects"). Each task list has a unique ID.
@@ -40,7 +49,7 @@ The CLI follows a `gtasks <resource> <action> [flags]` pattern.
 
 ---
 
-## 4. Command Reference
+## 5. Command Reference
 
 ### Account Management
 
@@ -158,7 +167,16 @@ Permanently deletes a task.
 - **Flags:**
   - `--tasklist` (string, optional): The ID of the task list. Defaults to `@default`.
 
-## 5. Implementation Details
+---
+
+### Synchronization
+
+#### `gtasks sync`
+Synchronizes your offline data with Google Tasks.
+- **Usage:** `gtasks sync`
+- **Warning:** This is a destructive operation. It will delete all your online task lists and tasks and replace them with your local data.
+
+## 6. Implementation Details
 
 - **Language:** Go
 - **Libraries:**
@@ -166,7 +184,7 @@ Permanently deletes a task.
   - Google API Client for Go (`google.golang.org/api/tasks/v1`).
   - Go OAuth2 Library (`golang.org/x/oauth2`).
 
-## 6. Project Documentation
+## 7. Project Documentation
 
 For more detailed information on the design and implementation, see the following documents:
 
@@ -175,7 +193,7 @@ For more detailed information on the design and implementation, see the followin
 - [Development Milestones (`MILESTONES.md`)](./MILESTONES.md)
 - [Offline Mode Milestones (`OFFLINE_MILESTONES.md`)](./OFFLINE_MILESTONES.md)
 
-## 7. Running Tests
+## 8. Running Tests
 
 To run the full suite of tests, navigate to the `go/` directory and use the following command:
 
