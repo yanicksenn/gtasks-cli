@@ -1,8 +1,11 @@
 package gtasks
 
 import (
+	"fmt"
 	"strings"
 	"testing"
+
+	"google.golang.org/api/tasks/v1"
 )
 
 func TestTasksLifecycle(t *testing.T) {
@@ -18,18 +21,21 @@ func TestTasksLifecycle(t *testing.T) {
 	var taskListID string
 	output := captureOutput(t, func() {
 		opts := CreateTaskListOptions{Title: "Shopping List"}
-		if err := client.CreateTaskList(opts); err != nil {
+		list, err := client.CreateTaskList(opts)
+		if err != nil {
 			t.Fatalf("CreateTaskList failed: %v", err)
 		}
+		taskListID = list.Id
 	})
-	taskListID = extractID(output)
 
 	// 2. Initial list of tasks should be empty
 	output = captureOutput(t, func() {
 		opts := ListTasksOptions{TaskListID: taskListID}
-		if err := client.ListTasks(opts); err != nil {
+		tasks, err := client.ListTasks(opts)
+		if err != nil {
 			t.Fatalf("ListTasks failed: %v", err)
 		}
+		printTasks(tasks)
 	})
 	if !strings.Contains(output, "No tasks found.") {
 		t.Errorf("expected empty list, got '%s'", output)
@@ -39,18 +45,21 @@ func TestTasksLifecycle(t *testing.T) {
 	var taskID string
 	output = captureOutput(t, func() {
 		opts := CreateTaskOptions{TaskListID: taskListID, Title: "Buy Milk"}
-		if err := client.CreateTask(opts); err != nil {
+		task, err := client.CreateTask(opts)
+		if err != nil {
 			t.Fatalf("CreateTask failed: %v", err)
 		}
+		taskID = task.Id
 	})
-	taskID = extractID(output)
 
 	// 4. List should now contain the new task
 	output = captureOutput(t, func() {
 		opts := ListTasksOptions{TaskListID: taskListID}
-		if err := client.ListTasks(opts); err != nil {
+		tasks, err := client.ListTasks(opts)
+		if err != nil {
 			t.Fatalf("ListTasks failed: %v", err)
 		}
+		printTasks(tasks)
 	})
 	if !strings.Contains(output, "[ ] Buy Milk") {
 		t.Errorf("expected list to contain '[ ] Buy Milk', got '%s'", output)
@@ -59,9 +68,11 @@ func TestTasksLifecycle(t *testing.T) {
 	// 5. Get the task by ID
 	output = captureOutput(t, func() {
 		opts := GetTaskOptions{TaskListID: taskListID, TaskID: taskID}
-		if err := client.GetTask(opts); err != nil {
+		task, err := client.GetTask(opts)
+		if err != nil {
 			t.Fatalf("GetTask failed: %v", err)
 		}
+		printTask(task)
 	})
 	if !strings.Contains(output, "Title:   Buy Milk") {
 		t.Errorf("expected get to show 'Title:   Buy Milk', got '%s'", output)
@@ -70,31 +81,29 @@ func TestTasksLifecycle(t *testing.T) {
 	// 6. Update the task
 	output = captureOutput(t, func() {
 		opts := UpdateTaskOptions{TaskListID: taskListID, TaskID: taskID, Title: "Buy Almond Milk"}
-		if err := client.UpdateTask(opts); err != nil {
+		_, err := client.UpdateTask(opts)
+		if err != nil {
 			t.Fatalf("UpdateTask failed: %v", err)
 		}
 	})
-	if !strings.Contains(output, "Successfully updated task: Buy Almond Milk") {
-		t.Errorf("expected update message, got '%s'", output)
-	}
 
 	// 7. Complete the task
 	output = captureOutput(t, func() {
 		opts := CompleteTaskOptions{TaskListID: taskListID, TaskID: taskID}
-		if err := client.CompleteTask(opts); err != nil {
+		_, err := client.CompleteTask(opts)
+		if err != nil {
 			t.Fatalf("CompleteTask failed: %v", err)
 		}
 	})
-	if !strings.Contains(output, "Successfully completed task: Buy Almond Milk") {
-		t.Errorf("expected completion message, got '%s'", output)
-	}
 
 	// 8. List should show the task as completed
 	output = captureOutput(t, func() {
 		opts := ListTasksOptions{TaskListID: taskListID, ShowCompleted: true}
-		if err := client.ListTasks(opts); err != nil {
+		tasks, err := client.ListTasks(opts)
+		if err != nil {
 			t.Fatalf("ListTasks failed: %v", err)
 		}
+		printTasks(tasks)
 	})
 	if !strings.Contains(output, "[x] Buy Almond Milk") {
 		t.Errorf("expected list to contain '[x] Buy Almond Milk', got '%s'", output)
@@ -103,22 +112,47 @@ func TestTasksLifecycle(t *testing.T) {
 	// 9. Delete the task
 	output = captureOutput(t, func() {
 		opts := DeleteTaskOptions{TaskListID: taskListID, TaskID: taskID}
-		if err := client.DeleteTask(opts); err != nil {
+		err := client.DeleteTask(opts)
+		if err != nil {
 			t.Fatalf("DeleteTask failed: %v", err)
 		}
 	})
-	if !strings.Contains(output, "Successfully deleted task") {
-		t.Errorf("expected deletion message, got '%s'", output)
-	}
 
 	// 10. Final list of tasks should be empty again
 	output = captureOutput(t, func() {
 		opts := ListTasksOptions{TaskListID: taskListID}
-		if err := client.ListTasks(opts); err != nil {
+		tasks, err := client.ListTasks(opts)
+		if err != nil {
 			t.Fatalf("ListTasks failed: %v", err)
 		}
+		printTasks(tasks)
 	})
 	if !strings.Contains(output, "No tasks found.") {
 		t.Errorf("expected empty list, got '%s'", output)
 	}
+}
+
+func printTasks(tasks *tasks.Tasks) {
+	if len(tasks.Items) == 0 {
+		fmt.Println("No tasks found.")
+		return
+	}
+
+	fmt.Println("Tasks:")
+	for _, item := range tasks.Items {
+		status := " "
+		if item.Status == "completed" {
+			status = "x"
+		}
+		fmt.Printf("[%s] %s (%s)\n", status, item.Title, item.Id)
+	}
+}
+
+func printTask(task *tasks.Task) {
+	fmt.Printf("ID:      %s\n", task.Id)
+	fmt.Printf("Title:   %s\n", task.Title)
+	fmt.Printf("Status:  %s\n", task.Status)
+	fmt.Printf("Notes:   %s\n", task.Notes)
+	fmt.Printf("Due:     %s\n", task.Due)
+	fmt.Printf("Self:    %s\n", task.SelfLink)
 }

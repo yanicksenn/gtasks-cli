@@ -66,6 +66,9 @@ func (s *mockStore) updateTaskList(id string, list *tasks.TaskList) *tasks.TaskL
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	existingList := s.taskLists[id]
+	if existingList == nil {
+		return nil
+	}
 	existingList.Title = list.Title
 	return existingList
 }
@@ -116,6 +119,9 @@ func (s *mockStore) updateTask(listID, taskID string, task *tasks.Task) *tasks.T
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	existingTask := s.tasks[listID][taskID]
+	if existingTask == nil {
+		return nil
+	}
 	if task.Title != "" {
 		existingTask.Title = task.Title
 	}

@@ -1,10 +1,6 @@
 package gtasks
 
-import (
-	"fmt"
-
-	"google.golang.org/api/tasks/v1"
-)
+import "google.golang.org/api/tasks/v1"
 
 // ListTasksOptions holds the parameters for listing tasks.
 type ListTasksOptions struct {
@@ -48,106 +44,41 @@ type DeleteTaskOptions struct {
 	TaskID     string
 }
 
-// ListTasks lists all tasks in a task list.
-func (c *Client) ListTasks(opts ListTasksOptions) error {
-	tasks, err := c.service.Tasks().List(opts.TaskListID).ShowCompleted(opts.ShowCompleted).ShowHidden(opts.ShowHidden).Do()
-	if err != nil {
-		return err
-	}
-
-	if len(tasks.Items) == 0 {
-		fmt.Println("No tasks found.")
-		return nil
-	}
-
-	fmt.Println("Tasks:")
-	for _, item := range tasks.Items {
-		status := " "
-		if item.Status == "completed" {
-			status = "x"
-		}
-		fmt.Printf("[%s] %s (%s)\n", status, item.Title, item.Id)
-	}
-
-	return nil
+func (c *onlineClient) ListTasks(opts ListTasksOptions) (*tasks.Tasks, error) {
+	return c.service.Tasks.List(opts.TaskListID).ShowCompleted(opts.ShowCompleted).ShowHidden(opts.ShowHidden).Do()
 }
 
-// GetTask retrieves a single task.
-func (c *Client) GetTask(opts GetTaskOptions) error {
-	task, err := c.service.Tasks().Get(opts.TaskListID, opts.TaskID).Do()
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("ID:      %s\n", task.Id)
-	fmt.Printf("Title:   %s\n", task.Title)
-	fmt.Printf("Status:  %s\n", task.Status)
-	fmt.Printf("Notes:   %s\n", task.Notes)
-	fmt.Printf("Due:     %s\n", task.Due)
-	fmt.Printf("Self:    %s\n", task.SelfLink)
-
-	return nil
+func (c *onlineClient) GetTask(opts GetTaskOptions) (*tasks.Task, error) {
+	return c.service.Tasks.Get(opts.TaskListID, opts.TaskID).Do()
 }
 
-// CreateTask creates a new task.
-func (c *Client) CreateTask(opts CreateTaskOptions) error {
+func (c *onlineClient) CreateTask(opts CreateTaskOptions) (*tasks.Task, error) {
 	task := &tasks.Task{
 		Title: opts.Title,
 		Notes: opts.Notes,
 		Due:   opts.Due,
 	}
-
-	createdTask, err := c.service.Tasks().Insert(opts.TaskListID, task).Do()
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("Successfully created task: %s (%s)\n", createdTask.Title, createdTask.Id)
-	return nil
+	return c.service.Tasks.Insert(opts.TaskListID, task).Do()
 }
 
-// UpdateTask updates a task.
-func (c *Client) UpdateTask(opts UpdateTaskOptions) error {
+func (c *onlineClient) UpdateTask(opts UpdateTaskOptions) (*tasks.Task, error) {
 	task := &tasks.Task{
 		Title: opts.Title,
 		Notes: opts.Notes,
 		Due:   opts.Due,
 	}
-
-	updatedTask, err := c.service.Tasks().Update(opts.TaskListID, opts.TaskID, task).Do()
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("Successfully updated task: %s (%s)\n", updatedTask.Title, updatedTask.Id)
-	return nil
+	return c.service.Tasks.Update(opts.TaskListID, opts.TaskID, task).Do()
 }
 
-// CompleteTask marks a task as complete.
-func (c *Client) CompleteTask(opts CompleteTaskOptions) error {
-	task, err := c.service.Tasks().Get(opts.TaskListID, opts.TaskID).Do()
+func (c *onlineClient) CompleteTask(opts CompleteTaskOptions) (*tasks.Task, error) {
+	task, err := c.service.Tasks.Get(opts.TaskListID, opts.TaskID).Do()
 	if err != nil {
-		return err
+		return nil, err
 	}
-
 	task.Status = "completed"
-
-	completedTask, err := c.service.Tasks().Update(opts.TaskListID, opts.TaskID, task).Do()
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("Successfully completed task: %s (%s)\n", completedTask.Title, completedTask.Id)
-	return nil
+	return c.service.Tasks.Update(opts.TaskListID, opts.TaskID, task).Do()
 }
 
-// DeleteTask deletes a task.
-func (c *Client) DeleteTask(opts DeleteTaskOptions) error {
-	err := c.service.Tasks().Delete(opts.TaskListID, opts.TaskID).Do()
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("Successfully deleted task: %s\n", opts.TaskID)
-	return nil
+func (c *onlineClient) DeleteTask(opts DeleteTaskOptions) error {
+	return c.service.Tasks.Delete(opts.TaskListID, opts.TaskID).Do()
 }

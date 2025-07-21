@@ -10,20 +10,39 @@ import (
 	"google.golang.org/api/tasks/v1"
 )
 
-// Client is a wrapper for the Google Tasks API.
-type Client struct {
-	service TasksService
+// Client is the interface for interacting with the tasks service, abstracting
+// away the online and offline implementations.
+type Client interface {
+	ListTaskLists() (*tasks.TaskLists, error)
+	CreateTaskList(opts CreateTaskListOptions) (*tasks.TaskList, error)
+	GetTaskList(opts GetTaskListOptions) (*tasks.TaskList, error)
+	UpdateTaskList(opts UpdateTaskListOptions) (*tasks.TaskList, error)
+	DeleteTaskList(opts DeleteTaskListOptions) error
+
+	ListTasks(opts ListTasksOptions) (*tasks.Tasks, error)
+	CreateTask(opts CreateTaskOptions) (*tasks.Task, error)
+	GetTask(opts GetTaskOptions) (*tasks.Task, error)
+	UpdateTask(opts UpdateTaskOptions) (*tasks.Task, error)
+	CompleteTask(opts CompleteTaskOptions) (*tasks.Task, error)
+	DeleteTask(opts DeleteTaskOptions) error
 }
 
-// NewClient creates a new client for the Google Tasks API.
-// It will create an online client by default, unless the --offline flag is set.
-func NewClient(cmd *cobra.Command, ctx context.Context) (*Client, error) {
+// onlineClient is a client that interacts with the real Google Tasks API.
+type onlineClient struct {
+	service *tasks.Service
+}
+
+// NewClient creates a new client based on the --offline flag.
+func NewClient(cmd *cobra.Command, ctx context.Context) (Client, error) {
 	offline, _ := cmd.Flags().GetBool("offline")
 	if offline {
-		// TODO: Return an offline client
+		// This will be implemented in Milestone 4
 		return nil, nil
 	}
+	return newOnlineClient(ctx)
+}
 
+func newOnlineClient(ctx context.Context) (*onlineClient, error) {
 	cfg, err := config.Load()
 	if err != nil {
 		return nil, err
@@ -44,5 +63,5 @@ func NewClient(cmd *cobra.Command, ctx context.Context) (*Client, error) {
 		return nil, err
 	}
 
-	return &Client{service: &TasksServiceWrapper{service: service}}, nil
+	return &onlineClient{service: service}, nil
 }

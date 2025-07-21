@@ -8,7 +8,7 @@ import (
 	"google.golang.org/api/tasks/v1"
 )
 
-func newTestClient(serverURL string) (*Client, error) {
+func newTestClient(serverURL string) (Client, error) {
 	service, err := tasks.NewService(context.Background(),
 		option.WithEndpoint(serverURL),
 		option.WithoutAuthentication(),
@@ -18,5 +18,5 @@ func newTestClient(serverURL string) (*Client, error) {
 		return nil, err
 	}
 
-	return &Client{service: &TasksServiceWrapper{service: service}}, nil
+	return &onlineClient{service: service}, nil
 }
