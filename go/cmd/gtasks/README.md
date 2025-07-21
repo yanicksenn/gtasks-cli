@@ -151,3 +151,10 @@ Permanently deletes a task.
   - Cobra (`github.com/spf13/cobra`) for CLI structure.
   - Google API Client for Go (`google.golang.org/api/tasks/v1`).
   - Go OAuth2 Library (`golang.org/x/oauth2`).
+
+## 6. Project Documentation
+
+For more detailed information on the design and implementation, see the following documents:
+
+- [Software Design (`DESIGN.md`)](./DESIGN.md)
+- [Implementation Plan (`IMPLEMENTATION_PLAN.md`)](./IMPLEMENTATION_PLAN.md)
