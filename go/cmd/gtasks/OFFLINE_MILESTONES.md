@@ -2,11 +2,11 @@
 
 This document outlines the development plan for the offline mode feature. We will track our progress by checking off each item as it's completed and tested.
 
-- [ ] **Milestone 1: Persistent Offline Store**
-  - [ ] Create a new `internal/gtasks/offline_store.go` file.
-  - [ ] Implement an `offlineStore` struct that reads from and writes to a persistent JSON file (e.g., `~/.config/gtasks/offline.json`).
-  - [ ] Add methods to the `offlineStore` for all CRUD operations on both `tasklists` and `tasks` (e.g., `createTaskList`, `getTask`).
-  - [ ] Add unit tests for the `offlineStore` to ensure data is persisted correctly.
+- [x] **Milestone 1: Persistent Offline Store**
+  - [x] Create a new `internal/gtasks/offline_store.go` file.
+  - [x] Implement an `offlineStore` struct that reads from and writes to a persistent JSON file (e.g., `~/.config/gtasks/offline.json`).
+  - [x] Add methods to the `offlineStore` for all CRUD operations on both `tasklists` and `tasks` (e.g., `createTaskList`, `getTask`).
+  - [x] Add unit tests for the `offlineStore` to ensure data is persisted correctly.
 
 - [ ] **Milestone 2: Offline Mode Switching**
   - [ ] Add a global, persistent `--offline` flag to the root command in `cmd/root.go`.
