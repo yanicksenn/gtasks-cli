@@ -75,3 +75,19 @@ To ensure a clean separation of concerns, we will use dedicated structs to pass 
 4.  **Execution:** The business logic function unpacks the struct and performs the necessary Google Tasks API calls.
 
 This pattern makes the `gtasks` package completely independent of Cobra, allowing it to be tested in isolation and potentially reused by other interfaces in the future.
+
+## 6. Testing Strategy
+
+The project will employ a two-tiered testing strategy to ensure correctness and reliability.
+
+### Offline Tests (Unit/Integration)
+
+- **Goal:** To verify the internal business logic without making any real network calls.
+- **Location:** Tests will be co-located with the code they test (e.g., `internal/gtasks/tasklists_test.go`).
+- **Method:** We will define interfaces for our Google Tasks API interactions. In tests, these interfaces will be fulfilled by mock implementations that simulate the behavior of the Google Tasks API. This allows us to test all logic, including request parameter construction, response handling, and error conditions, in a fast and deterministic manner.
+
+### End-to-End (E2E) Tests
+
+- **Goal:** To verify that the compiled CLI application functions correctly from a user's perspective.
+- **Location:** These tests will reside in a separate top-level directory (e.g., `e2e/`).
+- **Method:** The E2E test suite will compile the `gtasks` binary and execute it as a subprocess. Tests will invoke actual commands (e.g., `gtasks tasklists list --output json`) and assert against the stdout, stderr, and exit codes. These tests will require a live, authenticated Google account and will be run against the actual Google Tasks API. They are slower and will be run more selectively, but provide the highest level of confidence.
