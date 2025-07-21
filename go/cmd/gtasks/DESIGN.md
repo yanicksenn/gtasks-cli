@@ -98,7 +98,7 @@ The project employs a two-tiered testing strategy to ensure correctness and reli
 
 - **Goal:** To verify the internal business logic without making any real network calls.
 - **Location:** Tests are co-located with the code they test (e.g., `internal/gtasks/tasklists_test.go`).
-- **Method:** The tests use a mock HTTP server created with Go's `net/http/httptest` package. This server simulates the behavior of the Google Tasks API by returning predefined JSON responses. A test-specific client is used to direct the application's API calls to this mock server instead of the real Google API. This allows for fast, deterministic, and authentication-free testing of the entire business logic layer.
+- **Method:** The tests use a stateful, in-memory mock HTTP server created with Go's `net/http/httptest` package. This server simulates the behavior of the Google Tasks API by maintaining a consistent state (creating, updating, deleting resources) and returning realistic JSON responses. A test-specific client directs the application's API calls to this mock server, allowing for fast, deterministic, and authentication-free testing of the entire business logic layer.
 
 ### End-to-End (E2E) Tests
 

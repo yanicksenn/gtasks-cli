@@ -1,139 +1,110 @@
 package gtasks
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
+
+	"google.golang.org/api/tasks/v1"
 )
 
-// newMockServer creates a new mock server that simulates the Google Tasks API.
 func newMockServer() *httptest.Server {
+	store := newMockStore()
 	mux := http.NewServeMux()
 
-	// Mock for task lists
+	// TaskLists
 	mux.HandleFunc("/tasks/v1/users/@me/lists", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
 		switch r.Method {
 		case http.MethodGet:
-			w.Header().Set("Content-Type", "application/json")
-			fmt.Fprintln(w, `{
-				"kind": "tasks#taskLists",
-				"items": [
-					{
-						"kind": "tasks#taskList",
-						"id": "taskList1",
-						"title": "Test Task List 1"
-					},
-					{
-						"kind": "tasks#taskList",
-						"id": "taskList2",
-						"title": "Test Task List 2"
-					}
-				]
-			}`)
+			lists := store.listTaskLists()
+			json.NewEncoder(w).Encode(&tasks.TaskLists{Items: lists})
 		case http.MethodPost:
-			w.Header().Set("Content-Type", "application/json")
-			fmt.Fprintln(w, `{
-				"kind": "tasks#taskList",
-				"id": "newTaskList",
-				"title": "New Task List"
-			}`)
+			var list tasks.TaskList
+			json.NewDecoder(r.Body).Decode(&list)
+			createdList := store.createTaskList(&list)
+			json.NewEncoder(w).Encode(createdList)
 		default:
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
 	})
 
-	// Mock for a single task list
-	mux.HandleFunc("/tasks/v1/users/@me/lists/taskList1", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/tasks/v1/users/@me/lists/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		// Extract ID: /tasks/v1/users/@me/lists/{listID}
+		id := strings.TrimPrefix(r.URL.Path, "/tasks/v1/users/@me/lists/")
 		switch r.Method {
 		case http.MethodGet:
-			w.Header().Set("Content-Type", "application/json")
-			fmt.Fprintln(w, `{
-				"kind": "tasks#taskList",
-				"id": "taskList1",
-				"title": "Test Task List 1"
-			}`)
+			list := store.getTaskList(id)
+			json.NewEncoder(w).Encode(list)
 		case http.MethodPut:
-			w.Header().Set("Content-Type", "application/json")
-			fmt.Fprintln(w, `{
-				"kind": "tasks#taskList",
-				"id": "taskList1",
-				"title": "Updated Task List"
-			}`)
+			var list tasks.TaskList
+			json.NewDecoder(r.Body).Decode(&list)
+			updatedList := store.updateTaskList(id, &list)
+			json.NewEncoder(w).Encode(updatedList)
 		case http.MethodDelete:
+			store.deleteTaskList(id)
 			w.WriteHeader(http.StatusNoContent)
 		default:
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
 	})
 
-	// Mock for tasks in a task list
-	mux.HandleFunc("/tasks/v1/lists/taskList1/tasks", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			w.Header().Set("Content-Type", "application/json")
-			fmt.Fprintln(w, `{
-				"kind": "tasks#tasks",
-				"items": [
-					{
-						"kind": "tasks#task",
-						"id": "task1",
-						"title": "Test Task 1"
-					},
-					{
-						"kind": "tasks#task",
-						"id": "task2",
-						"title": "Test Task 2"
-					}
-				]
-			}`)
-		case http.MethodPost:
-			w.Header().Set("Content-Type", "application/json")
-			fmt.Fprintln(w, `{
-				"kind": "tasks#task",
-				"id": "newTask",
-				"title": "New Task"
-			}`)
-		default:
-			w.WriteHeader(http.StatusMethodNotAllowed)
-		}
-	})
+	// Tasks
+	mux.HandleFunc("/tasks/v1/lists/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		// Extract IDs: /tasks/v1/lists/{listID}/tasks/{taskID}
+		path := strings.TrimPrefix(r.URL.Path, "/tasks/v1/lists/")
+		parts := strings.Split(path, "/")
 
-	// Mock for a single task
-	mux.HandleFunc("/tasks/v1/lists/taskList1/tasks/task1", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			w.Header().Set("Content-Type", "application/json")
-			fmt.Fprintln(w, `{
-				"kind": "tasks#task",
-				"id": "task1",
-				"title": "Test Task 1"
-			}`)
-		case http.MethodPut:
-			w.Header().Set("Content-Type", "application/json")
-			fmt.Fprintln(w, `{
-				"kind": "tasks#task",
-				"id": "task1",
-				"title": "Updated Task"
-			}`)
-		case http.MethodDelete:
-			w.WriteHeader(http.StatusNoContent)
-		default:
-			w.WriteHeader(http.StatusMethodNotAllowed)
-		}
-	})
+		listID := parts[0]
+		isTaskRequest := len(parts) > 1 && parts[1] == "tasks"
 
-	// Mock for completing a task (get the task first)
-	mux.HandleFunc("/tasks/v1/lists/taskList1/tasks/task1/complete", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			w.WriteHeader(http.StatusMethodNotAllowed)
+		if !isTaskRequest {
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintln(w, `{
-			"kind": "tasks#task",
-			"id": "task1",
-			"title": "Test Task 1"
-		}`)
+
+		// Handle list-level task operations (/tasks/v1/lists/{listID}/tasks)
+		if len(parts) == 2 {
+			switch r.Method {
+			case http.MethodGet:
+				taskItems := store.listTasks(listID)
+				json.NewEncoder(w).Encode(&tasks.Tasks{Items: taskItems})
+			case http.MethodPost:
+				var task tasks.Task
+				json.NewDecoder(r.Body).Decode(&task)
+				createdTask := store.createTask(listID, &task)
+				json.NewEncoder(w).Encode(createdTask)
+			default:
+				w.WriteHeader(http.StatusMethodNotAllowed)
+			}
+			return
+		}
+
+		// Handle specific task operations (/tasks/v1/lists/{listID}/tasks/{taskID})
+		if len(parts) == 3 {
+			taskID := parts[2]
+			switch r.Method {
+			case http.MethodGet:
+				task := store.getTask(listID, taskID)
+				json.NewEncoder(w).Encode(task)
+			case http.MethodPut:
+				var task tasks.Task
+				json.NewDecoder(r.Body).Decode(&task)
+				updatedTask := store.updateTask(listID, taskID, &task)
+				json.NewEncoder(w).Encode(updatedTask)
+			case http.MethodDelete:
+				store.deleteTask(listID, taskID)
+				w.WriteHeader(http.StatusNoContent)
+			default:
+				w.WriteHeader(http.StatusMethodNotAllowed)
+			}
+			return
+		}
+
+		w.WriteHeader(http.StatusBadRequest)
 	})
 
 	return httptest.NewServer(mux)

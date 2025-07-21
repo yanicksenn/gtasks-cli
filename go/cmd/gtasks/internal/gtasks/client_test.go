@@ -11,6 +11,7 @@ import (
 func newTestClient(serverURL string) (*Client, error) {
 	service, err := tasks.NewService(context.Background(),
 		option.WithEndpoint(serverURL),
+		option.WithoutAuthentication(),
 		option.WithHTTPClient(&http.Client{}),
 	)
 	if err != nil {

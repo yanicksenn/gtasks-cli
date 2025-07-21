@@ -182,4 +182,14 @@ To run the full suite of tests, navigate to the `go/` directory and use the foll
 go test ./...
 ```
 
+This command executes all unit and integration tests against a high-fidelity, in-memory mock of the Google Tasks API, ensuring that no real network calls are made and no authentication is required. It also runs the basic E2E tests.
+
+## 7. Running Tests
+
+To run the full suite of tests, navigate to the `go/` directory and use the following command:
+
+```bash
+go test ./...
+```
+
 This will execute all unit, integration, and E2E tests for the `gtasks` CLI. The integration tests use a mock server to simulate the Google Tasks API, so no network calls are made.
