@@ -180,8 +180,7 @@ For more detailed information on the design and implementation, see the followin
 
 - [Software Design (`DESIGN.md`)](./DESIGN.md)
 - [Implementation Plan (`IMPLEMENTATION_PLAN.md`)](./IMPLEMENTATION_PLAN.md)
-- [Development Milestones (`MILESTONES.md`)](./MILESTONES.md)
-- [Offline Mode Milestones (`OFFLINE_MILESTONES.md`)](./OFFLINE_MILESTONES.md)
+- [Worklog (`WORKLOG.md`)](./WORKLOG.md)
 
 ## 8. Running Tests
 
