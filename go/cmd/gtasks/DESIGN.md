@@ -17,8 +17,7 @@
   - [Online and Offline Clients](#online-and-offline-clients)
 - [6. Offline Mode](#6-offline-mode)
   - [Persistent Offline Store](#persistent-offline-store)
-  - [Synchronization](#synchronization)
-- [7. Testing Strategy](#7-testing-strategy)
+- [7. Testing Strategy](#7-testing-strategy)](#7-testing-strategy)
   - [Offline Tests (Unit/Integration)](#offline-tests-unitintegration)
   - [End-to-End (E2E) Tests](#end-to-end-e2e-tests)
 
@@ -72,10 +71,6 @@ A `NewClient` factory function is responsible for creating and returning the cor
 ### Persistent Offline Store
 
 The offline mode is powered by a persistent `offlineStore`. This is a thread-safe, file-based database (a simple JSON file at `~/.config/gtasks/offline.json`) that stores all task lists and tasks created while offline.
-
-### Synchronization
-
-The `gtasks sync` command is used to push offline changes to the Google Tasks API. The current implementation uses a simple but destructive "overwrite" strategy: it deletes all task lists and tasks from the user's Google account and then re-creates them based on the contents of the local offline store.
 
 ## 7. Testing Strategy
 

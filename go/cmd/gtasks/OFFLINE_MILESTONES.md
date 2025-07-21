@@ -34,11 +34,6 @@ This document outlines the development plan for the offline mode feature. We wil
   - [x] **4.2:** Implement the methods of `offlineClient` to call the `offlineStore`.
   - [x] **4.3:** Update the `NewClient` factory to return either an `onlineClient` or `offlineClient` based on the `--offline` flag.
 
-- [x] **Milestone 5: The `sync` Command**
-  - [x] Create a new `gtasks sync` command.
-  - [x] Implement the logic to read from the offline store and push changes to the online service.
-  - [x] Add a confirmation prompt before syncing.
-
-- [x] **Milestone 6: Documentation**
-  - [x] Update the main `README.md` to fully document the `--offline` flag and the new `sync` command.
-  - [x] Update the `DESIGN.md` to reflect the new offline architecture.
+- [ ] **Milestone 5: Documentation**
+  - [ ] Update the main `README.md` to fully document the `--offline` flag.
+  - [ ] Update the `DESIGN.md` to reflect the new offline architecture.

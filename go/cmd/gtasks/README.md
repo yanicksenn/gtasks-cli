@@ -12,8 +12,7 @@ A command-line interface (CLI) for managing your Google Tasks.
   - [Account Management](#account-management)
   - [TaskList Management](#tasklist-management)
   - [Task Management](#task-management)
-  - [Synchronization](#synchronization)
-- [6. Implementation Details](#6-implementation-details)
+- [6. Implementation Details](#6-implementation-details)](#6-implementation-details)
 - [7. Project Documentation](#7-project-documentation)
 - [8. Running Tests](#8-running-tests)
 
@@ -37,7 +36,7 @@ The CLI follows a `gtasks <resource> <action> [flags]` pattern.
 
 `gtasks` supports a full offline mode. By using the global `--offline` flag, you can manage your tasks and task lists without an internet connection. All changes are saved to a local file (`~/.config/gtasks/offline.json`).
 
-When you are back online, you can use the `gtasks sync` command to push all your local changes to Google Tasks.
+**Note:** Synchronization must be handled manually. This tool does not currently provide a `sync` command.
 
 ---
 
@@ -166,15 +165,6 @@ Permanently deletes a task.
   - `<task_id>` (required): The ID of the task.
 - **Flags:**
   - `--tasklist` (string, optional): The ID of the task list. Defaults to `@default`.
-
----
-
-### Synchronization
-
-#### `gtasks sync`
-Synchronizes your offline data with Google Tasks.
-- **Usage:** `gtasks sync`
-- **Warning:** This is a destructive operation. It will delete all your online task lists and tasks and replace them with your local data.
 
 ## 6. Implementation Details
 
