@@ -173,3 +173,13 @@ For more detailed information on the design and implementation, see the followin
 - [Software Design (`DESIGN.md`)](./DESIGN.md)
 - [Implementation Plan (`IMPLEMENTATION_PLAN.md`)](./IMPLEMENTATION_PLAN.md)
 - [Development Milestones (`MILESTONES.md`)](./MILESTONES.md)
+
+## 7. Running Tests
+
+To run the full suite of tests, navigate to the `go/` directory and use the following command:
+
+```bash
+go test ./...
+```
+
+This will execute all unit, integration, and E2E tests for the `gtasks` CLI. The integration tests use a mock server to simulate the Google Tasks API, so no network calls are made.
