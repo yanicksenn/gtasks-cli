@@ -6,6 +6,20 @@
 
 ---
 
+## Table of Contents
+
+- [1. Overall Architecture](#1-overall-architecture)
+- [2. Directory Structure](#2-directory-structure)
+- [3. Authentication Flow (OAuth 2.0)](#3-authentication-flow-oauth-20)
+- [4. Configuration Management](#4-configuration-management)
+- [5. Google Tasks API Integration](#5-google-tasks-api-integration)
+  - [Command Structs for Decoupling](#command-structs-for-decoupling)
+- [6. Testing Strategy](#6-testing-strategy)
+  - [Offline Tests (Unit/Integration)](#offline-tests-unitintegration)
+  - [End-to-End (E2E) Tests](#end-to-end-e2e-tests)
+
+---
+
 This document outlines the high-level software design for the `gtasks` CLI tool.
 
 ## 1. Overall Architecture

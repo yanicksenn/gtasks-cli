@@ -2,6 +2,20 @@
 
 A command-line interface (CLI) for managing your Google Tasks.
 
+## Table of Contents
+
+- [1. Authentication](#1-authentication)
+- [2. Command Structure](#2-command-structure)
+- [3. Terminology](#3-terminology)
+- [4. Command Reference](#4-command-reference)
+  - [Account Management](#account-management)
+  - [TaskList Management](#tasklist-management)
+  - [Task Management](#task-management)
+- [5. Implementation Details](#5-implementation-details)
+- [6. Project Documentation](#6-project-documentation)
+
+---
+
 ## 1. Authentication
 
 - **Google Sign-In:** The CLI authenticates with Google using OAuth 2.0.

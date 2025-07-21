@@ -5,6 +5,16 @@
 
 ---
 
+## Table of Contents
+
+- [1. File Structure](#1-file-structure)
+- [2. Key Data Structures](#2-key-data-structures)
+  - [Configuration & Authentication Structs](#configuration--authentication-structs)
+  - [TaskList Management Structs](#tasklist-management-structs)
+  - [Task Management Structs](#task-management-structs)
+
+---
+
 This document lists the expected files and data structures required to build the `gtasks` CLI, based on the `DESIGN.md`.
 
 ## 1. File Structure

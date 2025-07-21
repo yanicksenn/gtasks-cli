@@ -2,6 +2,12 @@
 
 This directory contains the end-to-end (E2E) tests for the `gtasks` CLI.
 
+## Table of Contents
+
+- [Running the Tests](#running-the-tests)
+
+---
+
 ## Running the Tests
 
 To run the E2E tests, navigate to this directory and run:

@@ -2,6 +2,19 @@
 
 This document outlines the development plan as a series of ordered milestones. We will track our progress by checking off each item as it's completed and tested.
 
+## Table of Contents
+
+- [Milestone 1: Foundation & Scaffolding](#milestone-1-foundation--scaffolding)
+- [Milestone 2: Core Authentication](#milestone-2-core-authentication)
+- [Milestone 3: TaskList Read Operations](#milestone-3-tasklist-read-operations)
+- [Milestone 4: TaskList Write Operations](#milestone-4-tasklist-write-operations)
+- [Milestone 5: Task Read Operations](#milestone-5-task-read-operations)
+- [Milestone 6: Task Write Operations](#milestone-6-task-write-operations)
+- [Milestone 7: Account Management](#milestone-7-account-management)
+- [Milestone 8: End-to-End Testing](#milestone-8-end-to-end-testing)
+
+---
+
 - [x] **Milestone 1: Foundation & Scaffolding**
   - [x] Create the directory structure as defined in `DESIGN.md`.
   - [x] Initialize the Go module (`go mod init`).
