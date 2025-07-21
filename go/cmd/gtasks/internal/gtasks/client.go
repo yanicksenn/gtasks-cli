@@ -3,6 +3,7 @@ package gtasks
 import (
 	"context"
 
+	"github.com/spf13/cobra"
 	"github.com/yanicksenn/workspace/go/cmd/gtasks/internal/auth"
 	"github.com/yanicksenn/workspace/go/cmd/gtasks/internal/config"
 	"google.golang.org/api/option"
@@ -14,8 +15,15 @@ type Client struct {
 	service TasksService
 }
 
-// NewClient creates a new authenticated client for the Google Tasks API.
-func NewClient(ctx context.Context) (*Client, error) {
+// NewClient creates a new client for the Google Tasks API.
+// It will create an online client by default, unless the --offline flag is set.
+func NewClient(cmd *cobra.Command, ctx context.Context) (*Client, error) {
+	offline, _ := cmd.Flags().GetBool("offline")
+	if offline {
+		// TODO: Return an offline client
+		return nil, nil
+	}
+
 	cfg, err := config.Load()
 	if err != nil {
 		return nil, err

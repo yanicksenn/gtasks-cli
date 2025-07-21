@@ -19,7 +19,7 @@ var listTasklistsCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all your task lists",
 	Run: func(cmd *cobra.Command, args []string) {
-		client, err := gtasks.NewClient(context.Background())
+		client, err := gtasks.NewClient(cmd, context.Background())
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error creating client: %v\n", err)
 			os.Exit(1)
@@ -37,7 +37,7 @@ var getTasklistCmd = &cobra.Command{
 	Short: "Get details for a specific task list",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		client, err := gtasks.NewClient(context.Background())
+		client, err := gtasks.NewClient(cmd, context.Background())
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error creating client: %v\n", err)
 			os.Exit(1)
@@ -58,7 +58,7 @@ var createTasklistCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a new task list",
 	Run: func(cmd *cobra.Command, args []string) {
-		client, err := gtasks.NewClient(context.Background())
+		client, err := gtasks.NewClient(cmd, context.Background())
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error creating client: %v\n", err)
 			os.Exit(1)
@@ -81,7 +81,7 @@ var updateTasklistCmd = &cobra.Command{
 	Short: "Update a task list",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		client, err := gtasks.NewClient(context.Background())
+		client, err := gtasks.NewClient(cmd, context.Background())
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error creating client: %v\n", err)
 			os.Exit(1)
@@ -105,7 +105,7 @@ var deleteTasklistCmd = &cobra.Command{
 	Short: "Delete a task list",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		client, err := gtasks.NewClient(context.Background())
+		client, err := gtasks.NewClient(cmd, context.Background())
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error creating client: %v\n", err)
 			os.Exit(1)

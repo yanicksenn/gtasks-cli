@@ -19,6 +19,7 @@ var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Authenticate with Google and add a new account",
 	Run: func(cmd *cobra.Command, args []string) {
+		// This command does not support offline mode
 		authenticator, err := auth.NewAuthenticator()
 		if err != nil {
 			// This error is likely due to missing credentials.json

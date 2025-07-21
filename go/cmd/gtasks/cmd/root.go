@@ -13,6 +13,10 @@ var rootCmd = &cobra.Command{
 	Long:  `gtasks is a powerful command-line interface that helps you manage your Google Tasks directly from the terminal.`,
 }
 
+func init() {
+	rootCmd.PersistentFlags().Bool("offline", false, "Enable offline mode")
+}
+
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "Whoops. There was an error while executing your CLI '%s'", err)

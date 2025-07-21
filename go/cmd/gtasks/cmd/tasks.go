@@ -19,7 +19,7 @@ var listTasksCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all tasks in a task list",
 	Run: func(cmd *cobra.Command, args []string) {
-		client, err := gtasks.NewClient(context.Background())
+		client, err := gtasks.NewClient(cmd, context.Background())
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error creating client: %v\n", err)
 			os.Exit(1)
@@ -47,7 +47,7 @@ var getTaskCmd = &cobra.Command{
 	Short: "Get details for a specific task",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		client, err := gtasks.NewClient(context.Background())
+		client, err := gtasks.NewClient(cmd, context.Background())
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error creating client: %v\n", err)
 			os.Exit(1)
@@ -70,7 +70,7 @@ var createTaskCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a new task",
 	Run: func(cmd *cobra.Command, args []string) {
-		client, err := gtasks.NewClient(context.Background())
+		client, err := gtasks.NewClient(cmd, context.Background())
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error creating client: %v\n", err)
 			os.Exit(1)
@@ -100,7 +100,7 @@ var updateTaskCmd = &cobra.Command{
 	Short: "Update a task",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		client, err := gtasks.NewClient(context.Background())
+		client, err := gtasks.NewClient(cmd, context.Background())
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error creating client: %v\n", err)
 			os.Exit(1)
@@ -131,7 +131,7 @@ var completeTaskCmd = &cobra.Command{
 	Short: "Mark a task as complete",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		client, err := gtasks.NewClient(context.Background())
+		client, err := gtasks.NewClient(cmd, context.Background())
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error creating client: %v\n", err)
 			os.Exit(1)
@@ -155,7 +155,7 @@ var deleteTaskCmd = &cobra.Command{
 	Short: "Delete a task",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		client, err := gtasks.NewClient(context.Background())
+		client, err := gtasks.NewClient(cmd, context.Background())
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error creating client: %v\n", err)
 			os.Exit(1)
