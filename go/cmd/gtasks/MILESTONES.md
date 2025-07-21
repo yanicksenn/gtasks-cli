@@ -39,11 +39,11 @@ This document outlines the development plan as a series of ordered milestones. W
   - [x] Implement the `gtasks tasks delete` command.
   - [x] Add offline tests for the Task write operations.
 
-- [ ] **Milestone 7: Account Management**
-  - [ ] Implement the `gtasks logout` command.
-  - [ ] Implement the `gtasks accounts list` command.
-  - [ ] Implement the `gtasks accounts switch` command.
-  - [ ] Add offline tests for the account management logic.
+- [x] **Milestone 7: Account Management**
+  - [x] Implement the `gtasks logout` command.
+  - [x] Implement the `gtasks accounts list` command.
+  - [x] Implement the `gtasks accounts switch` command.
+  - [x] Add offline tests for the account management logic.
 
 - [ ] **Milestone 8: End-to-End Testing**
   - [ ] Set up the E2E test suite structure.
