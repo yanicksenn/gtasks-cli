@@ -21,11 +21,11 @@ This document outlines the development plan as a series of ordered milestones. W
   - [x] Create the internal client wrapper for the Google Tasks API.
   - [x] Create offline tests using mock interfaces for the TaskList read operations.
 
-- [ ] **Milestone 4: TaskList Write Operations**
-  - [ ] Implement the `gtasks tasklists create` command.
-  - [ ] Implement the `gtasks tasklists update` command.
-  - [ ] Implement the `gtasks tasklists delete` command.
-  - [ ] Add offline tests for the TaskList write operations.
+- [x] **Milestone 4: TaskList Write Operations**
+  - [x] Implement the `gtasks tasklists create` command.
+  - [x] Implement the `gtasks tasklists update` command.
+  - [x] Implement the `gtasks tasklists delete` command.
+  - [x] Add offline tests for the TaskList write operations.
 
 - [ ] **Milestone 5: Task Read Operations**
   - [ ] Implement the `gtasks tasks list` command.
