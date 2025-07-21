@@ -158,6 +158,14 @@ Marks a task as complete.
 - **Flags:**
   - `--tasklist` (string, optional): The ID of the task list. Defaults to `@default`.
 
+#### `gtasks tasks uncomplete`
+Marks a task as not complete.
+- **Usage:** `gtasks tasks uncomplete <task_id> [--tasklist <tasklist_id>]`
+- **Arguments:**
+  - `<task_id>` (required): The ID of the task.
+- **Flags:**
+  - `--tasklist` (string, optional): The ID of the task list. Defaults to `@default`.
+
 #### `gtasks tasks delete`
 Permanently deletes a task.
 - **Usage:** `gtasks tasks delete <task_id> [--tasklist <tasklist_id>]`
