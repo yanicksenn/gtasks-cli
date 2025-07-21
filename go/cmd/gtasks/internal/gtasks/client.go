@@ -36,8 +36,7 @@ type onlineClient struct {
 func NewClient(cmd *cobra.Command, ctx context.Context) (Client, error) {
 	offline, _ := cmd.Flags().GetBool("offline")
 	if offline {
-		// This will be implemented in Milestone 4
-		return nil, nil
+		return newOfflineClient()
 	}
 	return newOnlineClient(ctx)
 }

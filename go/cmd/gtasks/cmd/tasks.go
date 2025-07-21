@@ -35,9 +35,24 @@ var listTasksCmd = &cobra.Command{
 			ShowHidden:    showHidden,
 		}
 
-		if err := client.ListTasks(opts); err != nil {
+		tasks, err := client.ListTasks(opts)
+		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error listing tasks: %v\n", err)
 			os.Exit(1)
+		}
+
+		if len(tasks.Items) == 0 {
+			fmt.Println("No tasks found.")
+			return
+		}
+
+		fmt.Println("Tasks:")
+		for _, item := range tasks.Items {
+			status := " "
+			if item.Status == "completed" {
+				status = "x"
+			}
+			fmt.Printf("[%s] %s (%s)\n", status, item.Title, item.Id)
 		}
 	},
 }
@@ -59,10 +74,18 @@ var getTaskCmd = &cobra.Command{
 			TaskID:     args[0],
 		}
 
-		if err := client.GetTask(opts); err != nil {
+		task, err := client.GetTask(opts)
+		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error getting task: %v\n", err)
 			os.Exit(1)
 		}
+
+		fmt.Printf("ID:      %s\n", task.Id)
+		fmt.Printf("Title:   %s\n", task.Title)
+		fmt.Printf("Status:  %s\n", task.Status)
+		fmt.Printf("Notes:   %s\n", task.Notes)
+		fmt.Printf("Due:     %s\n", task.Due)
+		fmt.Printf("Self:    %s\n", task.SelfLink)
 	},
 }
 
@@ -88,10 +111,13 @@ var createTaskCmd = &cobra.Command{
 			Due:        due,
 		}
 
-		if err := client.CreateTask(opts); err != nil {
+		createdTask, err := client.CreateTask(opts)
+		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error creating task: %v\n", err)
 			os.Exit(1)
 		}
+
+		fmt.Printf("Successfully created task: %s (%s)\n", createdTask.Title, createdTask.Id)
 	},
 }
 
@@ -119,10 +145,13 @@ var updateTaskCmd = &cobra.Command{
 			Due:        due,
 		}
 
-		if err := client.UpdateTask(opts); err != nil {
+		updatedTask, err := client.UpdateTask(opts)
+		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error updating task: %v\n", err)
 			os.Exit(1)
 		}
+
+		fmt.Printf("Successfully updated task: %s (%s)\n", updatedTask.Title, updatedTask.Id)
 	},
 }
 
@@ -143,10 +172,13 @@ var completeTaskCmd = &cobra.Command{
 			TaskID:     args[0],
 		}
 
-		if err := client.CompleteTask(opts); err != nil {
+		completedTask, err := client.CompleteTask(opts)
+		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error completing task: %v\n", err)
 			os.Exit(1)
 		}
+
+		fmt.Printf("Successfully completed task: %s (%s)\n", completedTask.Title, completedTask.Id)
 	},
 }
 
@@ -167,10 +199,13 @@ var deleteTaskCmd = &cobra.Command{
 			TaskID:     args[0],
 		}
 
-		if err := client.DeleteTask(opts); err != nil {
+		err = client.DeleteTask(opts)
+		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error deleting task: %v\n", err)
 			os.Exit(1)
 		}
+
+		fmt.Printf("Successfully deleted task: %s\n", args[0])
 	},
 }
 

@@ -25,9 +25,20 @@ var listTasklistsCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if err := client.ListTaskLists(); err != nil {
+		lists, err := client.ListTaskLists()
+		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error listing task lists: %v\n", err)
 			os.Exit(1)
+		}
+
+		if len(lists.Items) == 0 {
+			fmt.Println("No task lists found.")
+			return
+		}
+
+		fmt.Println("Task Lists:")
+		for _, item := range lists.Items {
+			fmt.Printf("- %s (%s)\n", item.Title, item.Id)
 		}
 	},
 }
@@ -47,10 +58,15 @@ var getTasklistCmd = &cobra.Command{
 			TaskListID: args[0],
 		}
 
-		if err := client.GetTaskList(opts); err != nil {
+		list, err := client.GetTaskList(opts)
+		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error getting task list: %v\n", err)
 			os.Exit(1)
 		}
+
+		fmt.Printf("ID:    %s\n", list.Id)
+		fmt.Printf("Title: %s\n", list.Title)
+		fmt.Printf("Self:  %s\n", list.SelfLink)
 	},
 }
 
@@ -69,10 +85,13 @@ var createTasklistCmd = &cobra.Command{
 			Title: title,
 		}
 
-		if err := client.CreateTaskList(opts); err != nil {
+		createdList, err := client.CreateTaskList(opts)
+		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error creating task list: %v\n", err)
 			os.Exit(1)
 		}
+
+		fmt.Printf("Successfully created task list: %s (%s)\n", createdList.Title, createdList.Id)
 	},
 }
 
@@ -93,10 +112,13 @@ var updateTasklistCmd = &cobra.Command{
 			Title:      title,
 		}
 
-		if err := client.UpdateTaskList(opts); err != nil {
+		updatedList, err := client.UpdateTaskList(opts)
+		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error updating task list: %v\n", err)
 			os.Exit(1)
 		}
+
+		fmt.Printf("Successfully updated task list: %s (%s)\n", updatedList.Title, updatedList.Id)
 	},
 }
 
@@ -115,10 +137,13 @@ var deleteTasklistCmd = &cobra.Command{
 			TaskListID: args[0],
 		}
 
-		if err := client.DeleteTaskList(opts); err != nil {
+		err = client.DeleteTaskList(opts)
+		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error deleting task list: %v\n", err)
 			os.Exit(1)
 		}
+
+		fmt.Printf("Successfully deleted task list: %s\n", args[0])
 	},
 }
 
