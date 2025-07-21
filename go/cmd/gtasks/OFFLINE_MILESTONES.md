@@ -39,6 +39,6 @@ This document outlines the development plan for the offline mode feature. We wil
   - [x] Implement the logic to read from the offline store and push changes to the online service.
   - [x] Add a confirmation prompt before syncing.
 
-- [ ] **Milestone 6: Documentation**
-  - [ ] Update the main `README.md` to fully document the `--offline` flag and the new `sync` command.
-  - [ ] Update the `DESIGN.md` to reflect the new offline architecture.
+- [x] **Milestone 6: Documentation**
+  - [x] Update the main `README.md` to fully document the `--offline` flag and the new `sync` command.
+  - [x] Update the `DESIGN.md` to reflect the new offline architecture.
