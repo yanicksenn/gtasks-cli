@@ -182,6 +182,33 @@ var completeTaskCmd = &cobra.Command{
 	},
 }
 
+var uncompleteTaskCmd = &cobra.Command{
+	Use:   "uncomplete [ID]",
+	Short: "Mark a task as not complete",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		client, err := gtasks.NewClient(cmd, context.Background())
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error creating client: %v\n", err)
+			os.Exit(1)
+		}
+
+		tasklist, _ := cmd.Flags().GetString("tasklist")
+		opts := gtasks.UncompleteTaskOptions{
+			TaskListID: tasklist,
+			TaskID:     args[0],
+		}
+
+		uncompletedTask, err := client.UncompleteTask(opts)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error uncompleting task: %v\n", err)
+			os.Exit(1)
+		}
+
+		fmt.Printf("Successfully uncompleted task: %s (%s)\n", uncompletedTask.Title, uncompletedTask.Id)
+	},
+}
+
 var deleteTaskCmd = &cobra.Command{
 	Use:   "delete [ID]",
 	Short: "Delete a task",
@@ -199,8 +226,7 @@ var deleteTaskCmd = &cobra.Command{
 			TaskID:     args[0],
 		}
 
-		err = client.DeleteTask(opts)
-		if err != nil {
+		if err := client.DeleteTask(opts); err != nil {
 			fmt.Fprintf(os.Stderr, "Error deleting task: %v\n", err)
 			os.Exit(1)
 		}
@@ -216,6 +242,7 @@ func init() {
 	tasksCmd.AddCommand(createTaskCmd)
 	tasksCmd.AddCommand(updateTaskCmd)
 	tasksCmd.AddCommand(completeTaskCmd)
+	tasksCmd.AddCommand(uncompleteTaskCmd)
 	tasksCmd.AddCommand(deleteTaskCmd)
 
 	listTasksCmd.Flags().String("tasklist", "@default", "The ID of the task list")
@@ -236,6 +263,8 @@ func init() {
 	updateTaskCmd.Flags().String("due", "", "The new due date for the task (RFC3339 format)")
 
 	completeTaskCmd.Flags().String("tasklist", "@default", "The ID of the task list")
+
+	uncompleteTaskCmd.Flags().String("tasklist", "@default", "The ID of the task list")
 
 	deleteTaskCmd.Flags().String("tasklist", "@default", "The ID of the task list")
 }

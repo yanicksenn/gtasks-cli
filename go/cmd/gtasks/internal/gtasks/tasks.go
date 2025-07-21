@@ -38,6 +38,12 @@ type CompleteTaskOptions struct {
 	TaskID     string
 }
 
+// UncompleteTaskOptions holds the parameters for uncompleting a task.
+type UncompleteTaskOptions struct {
+	TaskListID string
+	TaskID     string
+}
+
 // DeleteTaskOptions holds the parameters for deleting a task.
 type DeleteTaskOptions struct {
 	TaskListID string
@@ -76,6 +82,15 @@ func (c *onlineClient) CompleteTask(opts CompleteTaskOptions) (*tasks.Task, erro
 		return nil, err
 	}
 	task.Status = "completed"
+	return c.service.Tasks.Update(opts.TaskListID, opts.TaskID, task).Do()
+}
+
+func (c *onlineClient) UncompleteTask(opts UncompleteTaskOptions) (*tasks.Task, error) {
+	task, err := c.service.Tasks.Get(opts.TaskListID, opts.TaskID).Do()
+	if err != nil {
+		return nil, err
+	}
+	task.Status = "needsAction"
 	return c.service.Tasks.Update(opts.TaskListID, opts.TaskID, task).Do()
 }
 

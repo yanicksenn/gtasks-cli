@@ -109,7 +109,29 @@ func TestTasksLifecycle(t *testing.T) {
 		t.Errorf("expected list to contain '[x] Buy Almond Milk', got '%s'", output)
 	}
 
-	// 9. Delete the task
+	// 9. Uncomplete the task
+	output = captureOutput(t, func() {
+		opts := UncompleteTaskOptions{TaskListID: taskListID, TaskID: taskID}
+		_, err := client.UncompleteTask(opts)
+		if err != nil {
+			t.Fatalf("UncompleteTask failed: %v", err)
+		}
+	})
+
+	// 10. List should show the task as not completed
+	output = captureOutput(t, func() {
+		opts := ListTasksOptions{TaskListID: taskListID, ShowCompleted: true}
+		tasks, err := client.ListTasks(opts)
+		if err != nil {
+			t.Fatalf("ListTasks failed: %v", err)
+		}
+		printTasks(tasks)
+	})
+	if !strings.Contains(output, "[ ] Buy Almond Milk") {
+		t.Errorf("expected list to contain '[ ] Buy Almond Milk', got '%s'", output)
+	}
+
+	// 11. Delete the task
 	output = captureOutput(t, func() {
 		opts := DeleteTaskOptions{TaskListID: taskListID, TaskID: taskID}
 		err := client.DeleteTask(opts)
@@ -118,7 +140,7 @@ func TestTasksLifecycle(t *testing.T) {
 		}
 	})
 
-	// 10. Final list of tasks should be empty again
+	// 12. Final list of tasks should be empty again
 	output = captureOutput(t, func() {
 		opts := ListTasksOptions{TaskListID: taskListID}
 		tasks, err := client.ListTasks(opts)

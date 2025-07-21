@@ -24,3 +24,7 @@ This document provides a high-level, chronological summary of the major features
 -   **`--offline` Flag:** Implemented a global `--offline` flag to enable offline operations.
 -   **Offline Client:** Created an `offlineClient` that implements the `Client` interface by interacting with the local JSON file instead of the live Google API.
 -   **Removed `sync` Command:** The initial, destructive `sync` command was removed from the codebase and documentation to prevent accidental data loss.
+
+## Feature Additions
+
+-   **Uncomplete Task Command:** Added a `gtasks tasks uncomplete` command to mark a completed task as `needsAction`.

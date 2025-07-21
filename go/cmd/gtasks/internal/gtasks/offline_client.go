@@ -85,6 +85,15 @@ func (c *offlineClient) CompleteTask(opts CompleteTaskOptions) (*tasks.Task, err
 	return c.store.updateTask(opts.TaskListID, opts.TaskID, task)
 }
 
+func (c *offlineClient) UncompleteTask(opts UncompleteTaskOptions) (*tasks.Task, error) {
+	task, err := c.store.getTask(opts.TaskListID, opts.TaskID)
+	if err != nil {
+		return nil, err
+	}
+	task.Status = "needsAction"
+	return c.store.updateTask(opts.TaskListID, opts.TaskID, task)
+}
+
 func (c *offlineClient) DeleteTask(opts DeleteTaskOptions) error {
 	return c.store.deleteTask(opts.TaskListID, opts.TaskID)
 }

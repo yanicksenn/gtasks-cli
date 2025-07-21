@@ -24,6 +24,7 @@ type Client interface {
 	GetTask(opts GetTaskOptions) (*tasks.Task, error)
 	UpdateTask(opts UpdateTaskOptions) (*tasks.Task, error)
 	CompleteTask(opts CompleteTaskOptions) (*tasks.Task, error)
+	UncompleteTask(opts UncompleteTaskOptions) (*tasks.Task, error)
 	DeleteTask(opts DeleteTaskOptions) error
 }
 
