@@ -12,7 +12,7 @@ A command-line interface (CLI) for managing your Google Tasks.
   - [Account Management](#account-management)
   - [TaskList Management](#tasklist-management)
   - [Task Management](#task-management)
-- [6. Implementation Details](#6-implementation-details)](#6-implementation-details)
+- [6. Implementation Details](#6-implementation-details)
 - [7. Project Documentation](#7-project-documentation)
 - [8. Running Tests](#8-running-tests)
 
