@@ -32,12 +32,12 @@ This document outlines the development plan as a series of ordered milestones. W
   - [x] Implement the `gtasks tasks get` command.
   - [x] Add offline tests for the Task read operations.
 
-- [ ] **Milestone 6: Task Write Operations**
-  - [ ] Implement the `gtasks tasks create` command.
-  - [ ] Implement the `gtasks tasks update` command.
-  - [ ] Implement the `gtasks tasks complete` command.
-  - [ ] Implement the `gtasks tasks delete` command.
-  - [ ] Add offline tests for the Task write operations.
+- [x] **Milestone 6: Task Write Operations**
+  - [x] Implement the `gtasks tasks create` command.
+  - [x] Implement the `gtasks tasks update` command.
+  - [x] Implement the `gtasks tasks complete` command.
+  - [x] Implement the `gtasks tasks delete` command.
+  - [x] Add offline tests for the Task write operations.
 
 - [ ] **Milestone 7: Account Management**
   - [ ] Implement the `gtasks logout` command.
