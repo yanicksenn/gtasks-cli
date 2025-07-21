@@ -48,7 +48,7 @@ func NewAuthenticator() (*Authenticator, error) {
 		ClientID:     creds.Installed.ClientID,
 		ClientSecret: creds.Installed.ClientSecret,
 		RedirectURL:  redirectURL,
-		Scopes:       []string{"https://www.googleapis.com/auth/tasks", "https://www.googleapis.com/auth/userinfo.email"},
+		Scopes:       []string{"https://www.googleapis.com/auth/tasks", "https://www.googleapis.com/auth/tasks.readonly", "https://www.googleapis.com/auth/userinfo.email"},
 		Endpoint:     google.Endpoint,
 	}
 	return &Authenticator{config: config}, nil
