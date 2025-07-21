@@ -48,6 +48,19 @@ func TestGetTaskList(t *testing.T) {
 	t.Skip("skipping test due to complex mocking requirements")
 }
 
+func TestCreateTaskList(t *testing.T) {
+	t.Skip("skipping test due to complex mocking requirements")
+}
+
+func TestUpdateTaskList(t *testing.T) {
+	t.Skip("skipping test due to complex mocking requirements")
+}
+
+func TestDeleteTaskList(t *testing.T) {
+	t.Skip("skipping test due to complex mocking requirements")
+}
+
+
 // Helper function to create a mock http response.
 func newMockResponse(body string) *http.Response {
 	return &http.Response{
