@@ -15,11 +15,11 @@ This document outlines the development plan as a series of ordered milestones. W
   - [x] Implement the configuration logic to track the active user.
   - [x] Create offline tests for the auth and config logic.
 
-- [ ] **Milestone 3: TaskList Read Operations**
-  - [ ] Implement the `gtasks tasklists list` command.
-  - [ ] Implement the `gtasks tasklists get` command.
-  - [ ] Create the internal client wrapper for the Google Tasks API.
-  - [ ] Create offline tests using mock interfaces for the TaskList read operations.
+- [x] **Milestone 3: TaskList Read Operations**
+  - [x] Implement the `gtasks tasklists list` command.
+  - [x] Implement the `gtasks tasklists get` command.
+  - [x] Create the internal client wrapper for the Google Tasks API.
+  - [x] Create offline tests using mock interfaces for the TaskList read operations.
 
 - [ ] **Milestone 4: TaskList Write Operations**
   - [ ] Implement the `gtasks tasklists create` command.
