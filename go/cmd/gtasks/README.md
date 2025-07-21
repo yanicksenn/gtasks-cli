@@ -94,55 +94,55 @@ Manage your tasks within a task list.
 
 #### `gtasks tasks list`
 Lists tasks within a specific task list.
-- **Usage:** `gtasks tasks list --tasklist <tasklist_id>`
+- **Usage:** `gtasks tasks list [--tasklist <tasklist_id>]`
 - **Flags:**
-  - `--tasklist` (string, required): The ID of the task list.
+  - `--tasklist` (string, optional): The ID of the task list. Defaults to `@default`.
   - `--show-completed` (boolean, optional): Include completed tasks.
   - `--show-hidden` (boolean, optional): Include hidden tasks.
 
 #### `gtasks tasks get`
 Retrieves the details of a specific task.
-- **Usage:** `gtasks tasks get <task_id> --tasklist <tasklist_id>`
+- **Usage:** `gtasks tasks get <task_id> [--tasklist <tasklist_id>]`
 - **Arguments:**
   - `<task_id>` (required): The ID of the task.
 - **Flags:**
-  - `--tasklist` (string, required): The ID of the task list containing the task.
+  - `--tasklist` (string, optional): The ID of the task list containing the task. Defaults to `@default`.
 
 #### `gtasks tasks create`
 Creates a new task in a task list.
-- **Usage:** `gtasks tasks create --tasklist <tasklist_id> --title <task_title>`
+- **Usage:** `gtasks tasks create --title <task_title> [--tasklist <tasklist_id>]`
 - **Flags:**
-  - `--tasklist` (string, required): The ID of the task list.
+  - `--tasklist` (string, optional): The ID of the task list. Defaults to `@default`.
   - `--title` (string, required): The title of the task.
   - `--notes` (string, optional): Notes or description for the task.
   - `--due` (string, optional): Due date in RFC3339 format (e.g., "2025-12-31T22:00:00.000Z").
 
 #### `gtasks tasks update`
 Updates an existing task.
-- **Usage:** `gtasks tasks update <task_id> --tasklist <tasklist_id> [flags]`
+- **Usage:** `gtasks tasks update <task_id> [--tasklist <tasklist_id>] [flags]`
 - **Arguments:**
   - `<task_id>` (required): The ID of the task to update.
 - **Flags:**
-  - `--tasklist` (string, required): The ID of the task list.
+  - `--tasklist` (string, optional): The ID of the task list. Defaults to `@default`.
   - `--title` (string, optional): The new title for the task.
   - `--notes` (string, optional): The new notes for the task.
   - `--due` (string, optional): The new due date in RFC3339 format.
 
 #### `gtasks tasks complete`
 Marks a task as complete.
-- **Usage:** `gtasks tasks complete <task_id> --tasklist <tasklist_id>`
+- **Usage:** `gtasks tasks complete <task_id> [--tasklist <tasklist_id>]`
 - **Arguments:**
   - `<task_id>` (required): The ID of the task.
 - **Flags:**
-  - `--tasklist` (string, required): The ID of the task list.
+  - `--tasklist` (string, optional): The ID of the task list. Defaults to `@default`.
 
 #### `gtasks tasks delete`
 Permanently deletes a task.
-- **Usage:** `gtasks tasks delete <task_id> --tasklist <tasklist_id>`
+- **Usage:** `gtasks tasks delete <task_id> [--tasklist <tasklist_id>]`
 - **Arguments:**
   - `<task_id>` (required): The ID of the task.
 - **Flags:**
-  - `--tasklist` (string, required): The ID of the task list.
+  - `--tasklist` (string, optional): The ID of the task list. Defaults to `@default`.
 
 ## 5. Implementation Details
 
