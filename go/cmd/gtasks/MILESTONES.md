@@ -27,10 +27,10 @@ This document outlines the development plan as a series of ordered milestones. W
   - [x] Implement the `gtasks tasklists delete` command.
   - [x] Add offline tests for the TaskList write operations.
 
-- [ ] **Milestone 5: Task Read Operations**
-  - [ ] Implement the `gtasks tasks list` command.
-  - [ ] Implement the `gtasks tasks get` command.
-  - [ ] Add offline tests for the Task read operations.
+- [x] **Milestone 5: Task Read Operations**
+  - [x] Implement the `gtasks tasks list` command.
+  - [x] Implement the `gtasks tasks get` command.
+  - [x] Add offline tests for the Task read operations.
 
 - [ ] **Milestone 6: Task Write Operations**
   - [ ] Implement the `gtasks tasks create` command.
