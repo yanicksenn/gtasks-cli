@@ -29,10 +29,10 @@ This document outlines the development plan for the offline mode feature. We wil
   - [x] **Sub-milestone 3.4: Verify the Refactoring**
     - [x] Run the entire test suite (`go test ./...`) to confirm that our mock-based tests still pass. This will prove that the refactoring was successful and did not break any existing functionality.
 
-- [ ] **Milestone 4: Implement the Offline Service**
-  - [ ] **4.1:** Create a new `offlineClient` struct that also implements the `Client` interface.
-  - [ ] **4.2:** Implement the methods of `offlineClient` to call the `offlineStore`.
-  - [ ] **4.3:** Update the `NewClient` factory to return either an `onlineClient` or `offlineClient` based on the `--offline` flag.
+- [x] **Milestone 4: Implement the Offline Service**
+  - [x] **4.1:** Create a new `offlineClient` struct that also implements the `Client` interface.
+  - [x] **4.2:** Implement the methods of `offlineClient` to call the `offlineStore`.
+  - [x] **4.3:** Update the `NewClient` factory to return either an `onlineClient` or `offlineClient` based on the `--offline` flag.
 
 - [ ] **Milestone 5: The `sync` Command**
   - [ ] Create a new `gtasks sync` command.
