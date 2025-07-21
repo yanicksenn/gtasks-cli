@@ -8,10 +8,10 @@ This document outlines the development plan for the offline mode feature. We wil
   - [x] Add methods to the `offlineStore` for all CRUD operations on both `tasklists` and `tasks` (e.g., `createTaskList`, `getTask`).
   - [x] Add unit tests for the `offlineStore` to ensure data is persisted correctly.
 
-- [ ] **Milestone 2: Offline Mode Switching**
-  - [ ] Add a global, persistent `--offline` flag to the root command in `cmd/root.go`.
-  - [ ] Refactor the `gtasks.NewClient` function into a "factory" that checks for the `--offline` flag.
-  - [ ] The factory will decide whether to return a client configured for the real Google API or for the new offline service.
+- [x] **Milestone 2: Offline Mode Switching**
+  - [x] Add a global, persistent `--offline` flag to the root command in `cmd/root.go`.
+  - [x] Refactor the `gtasks.NewClient` function into a "factory" that checks for the `--offline` flag.
+  - [x] The factory will decide whether to return a client configured for the real Google API or for the new offline service.
 
 - [ ] **Milestone 3: Offline Service Implementation**
   - [ ] Create a new `internal/gtasks/offline_service.go` file.
