@@ -183,30 +183,24 @@ func init() {
 	tasksCmd.AddCommand(completeTaskCmd)
 	tasksCmd.AddCommand(deleteTaskCmd)
 
-	listTasksCmd.Flags().String("tasklist", "", "The ID of the task list")
-	listTasksCmd.MarkFlagRequired("tasklist")
+	listTasksCmd.Flags().String("tasklist", "@default", "The ID of the task list")
 	listTasksCmd.Flags().Bool("show-completed", false, "Include completed tasks in the output")
 	listTasksCmd.Flags().Bool("show-hidden", false, "Include hidden tasks in the output")
 
-	getTaskCmd.Flags().String("tasklist", "", "The ID of the task list")
-	getTaskCmd.MarkFlagRequired("tasklist")
+	getTaskCmd.Flags().String("tasklist", "@default", "The ID of the task list")
 
-	createTaskCmd.Flags().String("tasklist", "", "The ID of the task list")
-	createTaskCmd.MarkFlagRequired("tasklist")
+	createTaskCmd.Flags().String("tasklist", "@default", "The ID of the task list")
 	createTaskCmd.Flags().String("title", "", "The title of the new task")
 	createTaskCmd.MarkFlagRequired("title")
 	createTaskCmd.Flags().String("notes", "", "The notes for the new task")
 	createTaskCmd.Flags().String("due", "", "The due date for the new task (RFC3339 format)")
 
-	updateTaskCmd.Flags().String("tasklist", "", "The ID of the task list")
-	updateTaskCmd.MarkFlagRequired("tasklist")
+	updateTaskCmd.Flags().String("tasklist", "@default", "The ID of the task list")
 	updateTaskCmd.Flags().String("title", "", "The new title for the task")
 	updateTaskCmd.Flags().String("notes", "", "The new notes for the task")
 	updateTaskCmd.Flags().String("due", "", "The new due date for the task (RFC3339 format)")
 
-	completeTaskCmd.Flags().String("tasklist", "", "The ID of the task list")
-	completeTaskCmd.MarkFlagRequired("tasklist")
+	completeTaskCmd.Flags().String("tasklist", "@default", "The ID of the task list")
 
-	deleteTaskCmd.Flags().String("tasklist", "", "The ID of the task list")
-	deleteTaskCmd.MarkFlagRequired("tasklist")
+	deleteTaskCmd.Flags().String("tasklist", "@default", "The ID of the task list")
 }
