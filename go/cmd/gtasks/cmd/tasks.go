@@ -66,10 +66,122 @@ var getTaskCmd = &cobra.Command{
 	},
 }
 
+var createTaskCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Create a new task",
+	Run: func(cmd *cobra.Command, args []string) {
+		client, err := gtasks.NewClient(context.Background())
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error creating client: %v\n", err)
+			os.Exit(1)
+		}
+
+		tasklist, _ := cmd.Flags().GetString("tasklist")
+		title, _ := cmd.Flags().GetString("title")
+		notes, _ := cmd.Flags().GetString("notes")
+		due, _ := cmd.Flags().GetString("due")
+
+		opts := gtasks.CreateTaskOptions{
+			TaskListID: tasklist,
+			Title:      title,
+			Notes:      notes,
+			Due:        due,
+		}
+
+		if err := client.CreateTask(opts); err != nil {
+			fmt.Fprintf(os.Stderr, "Error creating task: %v\n", err)
+			os.Exit(1)
+		}
+	},
+}
+
+var updateTaskCmd = &cobra.Command{
+	Use:   "update [ID]",
+	Short: "Update a task",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		client, err := gtasks.NewClient(context.Background())
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error creating client: %v\n", err)
+			os.Exit(1)
+		}
+
+		tasklist, _ := cmd.Flags().GetString("tasklist")
+		title, _ := cmd.Flags().GetString("title")
+		notes, _ := cmd.Flags().GetString("notes")
+		due, _ := cmd.Flags().GetString("due")
+
+		opts := gtasks.UpdateTaskOptions{
+			TaskListID: tasklist,
+			TaskID:     args[0],
+			Title:      title,
+			Notes:      notes,
+			Due:        due,
+		}
+
+		if err := client.UpdateTask(opts); err != nil {
+			fmt.Fprintf(os.Stderr, "Error updating task: %v\n", err)
+			os.Exit(1)
+		}
+	},
+}
+
+var completeTaskCmd = &cobra.Command{
+	Use:   "complete [ID]",
+	Short: "Mark a task as complete",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		client, err := gtasks.NewClient(context.Background())
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error creating client: %v\n", err)
+			os.Exit(1)
+		}
+
+		tasklist, _ := cmd.Flags().GetString("tasklist")
+		opts := gtasks.CompleteTaskOptions{
+			TaskListID: tasklist,
+			TaskID:     args[0],
+		}
+
+		if err := client.CompleteTask(opts); err != nil {
+			fmt.Fprintf(os.Stderr, "Error completing task: %v\n", err)
+			os.Exit(1)
+		}
+	},
+}
+
+var deleteTaskCmd = &cobra.Command{
+	Use:   "delete [ID]",
+	Short: "Delete a task",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		client, err := gtasks.NewClient(context.Background())
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error creating client: %v\n", err)
+			os.Exit(1)
+		}
+
+		tasklist, _ := cmd.Flags().GetString("tasklist")
+		opts := gtasks.DeleteTaskOptions{
+			TaskListID: tasklist,
+			TaskID:     args[0],
+		}
+
+		if err := client.DeleteTask(opts); err != nil {
+			fmt.Fprintf(os.Stderr, "Error deleting task: %v\n", err)
+			os.Exit(1)
+		}
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(tasksCmd)
 	tasksCmd.AddCommand(listTasksCmd)
 	tasksCmd.AddCommand(getTaskCmd)
+	tasksCmd.AddCommand(createTaskCmd)
+	tasksCmd.AddCommand(updateTaskCmd)
+	tasksCmd.AddCommand(completeTaskCmd)
+	tasksCmd.AddCommand(deleteTaskCmd)
 
 	listTasksCmd.Flags().String("tasklist", "", "The ID of the task list")
 	listTasksCmd.MarkFlagRequired("tasklist")
@@ -78,4 +190,23 @@ func init() {
 
 	getTaskCmd.Flags().String("tasklist", "", "The ID of the task list")
 	getTaskCmd.MarkFlagRequired("tasklist")
+
+	createTaskCmd.Flags().String("tasklist", "", "The ID of the task list")
+	createTaskCmd.MarkFlagRequired("tasklist")
+	createTaskCmd.Flags().String("title", "", "The title of the new task")
+	createTaskCmd.MarkFlagRequired("title")
+	createTaskCmd.Flags().String("notes", "", "The notes for the new task")
+	createTaskCmd.Flags().String("due", "", "The due date for the new task (RFC3339 format)")
+
+	updateTaskCmd.Flags().String("tasklist", "", "The ID of the task list")
+	updateTaskCmd.MarkFlagRequired("tasklist")
+	updateTaskCmd.Flags().String("title", "", "The new title for the task")
+	updateTaskCmd.Flags().String("notes", "", "The new notes for the task")
+	updateTaskCmd.Flags().String("due", "", "The new due date for the task (RFC3339 format)")
+
+	completeTaskCmd.Flags().String("tasklist", "", "The ID of the task list")
+	completeTaskCmd.MarkFlagRequired("tasklist")
+
+	deleteTaskCmd.Flags().String("tasklist", "", "The ID of the task list")
+	deleteTaskCmd.MarkFlagRequired("tasklist")
 }
