@@ -2,11 +2,11 @@
 
 This document outlines the development plan as a series of ordered milestones. We will track our progress by checking off each item as it's completed and tested.
 
-- [ ] **Milestone 1: Foundation & Scaffolding**
-  - [ ] Create the directory structure as defined in `DESIGN.md`.
-  - [ ] Initialize the Go module (`go mod init`).
-  - [ ] Add initial dependencies (`cobra`, `oauth2`, `google-api-go-client`).
-  - [ ] Set up the main application entry point (`main.go`) and the root Cobra command.
+- [x] **Milestone 1: Foundation & Scaffolding**
+  - [x] Create the directory structure as defined in `DESIGN.md`.
+  - [x] Initialize the Go module (`go mod init`).
+  - [x] Add initial dependencies (`cobra`, `oauth2`, `google-api-go-client`).
+  - [x] Set up the main application entry point (`main.go`) and the root Cobra command.
 
 - [ ] **Milestone 2: Core Authentication**
   - [ ] Implement the `gtasks login` command.
