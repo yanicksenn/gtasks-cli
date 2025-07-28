@@ -17,7 +17,7 @@ func PrintTaskListProperty(list *tasks.TaskList, property string) error {
 	case "selflink":
 		fmt.Println(list.SelfLink)
 	default:
-		return fmt.Errorf("unknown property: %s", property)
+		return fmt.Errorf("unknown property: %s. Available properties: id, title, selfLink", property)
 	}
 	return nil
 }
@@ -38,7 +38,7 @@ func PrintTaskProperty(task *tasks.Task, property string) error {
 	case "selflink":
 		fmt.Println(task.SelfLink)
 	default:
-		return fmt.Errorf("unknown property: %s", property)
+		return fmt.Errorf("unknown property: %s. Available properties: id, title, notes, due, status, selfLink", property)
 	}
 	return nil
 }

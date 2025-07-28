@@ -79,11 +79,17 @@ func TestPrintUnknownProperty(t *testing.T) {
 	if err == nil {
 		t.Error("expected an error, got nil")
 	}
+	if !strings.Contains(err.Error(), "unknown property: unknown. Available properties: id, title, selfLink") {
+		t.Errorf("expected error message to contain 'unknown property: unknown. Available properties: id, title, selfLink', got '%s'", err.Error())
+	}
 
 	task := &tasks.Task{}
 	err = PrintTaskProperty(task, "unknown")
 	if err == nil {
 		t.Error("expected an error, got nil")
+	}
+	if !strings.Contains(err.Error(), "unknown property: unknown. Available properties: id, title, notes, due, status, selfLink") {
+		t.Errorf("expected error message to contain 'unknown property: unknown. Available properties: id, title, notes, due, status, selfLink', got '%s'", err.Error())
 	}
 }
 
