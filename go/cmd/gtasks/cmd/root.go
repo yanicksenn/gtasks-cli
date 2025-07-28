@@ -5,16 +5,25 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/yanicksenn/workspace/go/cmd/gtasks/internal/version"
 )
 
 var rootCmd = &cobra.Command{
 	Use:   "gtasks",
 	Short: "A CLI for managing your Google Tasks",
 	Long:  `gtasks is a powerful command-line interface that helps you manage your Google Tasks directly from the terminal.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		v, _ := cmd.Flags().GetBool("version")
+		if v {
+			fmt.Println(version.Get())
+			os.Exit(0)
+		}
+	},
 }
 
 func init() {
 	rootCmd.PersistentFlags().Bool("offline", false, "Enable offline mode")
+	rootCmd.Flags().BoolP("version", "v", false, "Print the version number")
 }
 
 func Execute() {

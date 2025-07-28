@@ -42,3 +42,15 @@ func TestTasks(t *testing.T) {
 	t.Skip("skipping tasks e2e tests until authentication is handled in tests")
 	// TODO: Implement e2e tests for tasks, which will require handling authentication.
 }
+
+func TestVersion(t *testing.T) {
+	cmd := exec.Command("./" + cliName, "--version")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("failed to run version command: %v\nOutput: %s", err, output)
+	}
+
+	if !strings.Contains(string(output), "0.1.0") {
+		t.Errorf("expected version text to contain '0.1.0', got '%s'", output)
+	}
+}

@@ -32,6 +32,11 @@ The CLI follows a `gtasks <resource> <action> [flags]` pattern.
 - **`resource`**: The type of object to operate on (e.g., `accounts`, `tasklists`, `tasks`).
 - **`action`**: The operation to perform (e.g., `list`, `create`, `get`, `update`, `delete`).
 
+### Global Flags
+
+- `--offline`: Enable offline mode.
+- `--version`, `-v`: Print the version number.
+
 ## 3. Offline Mode
 
 `gtasks` supports a full offline mode. By using the global `--offline` flag, you can manage your tasks and task lists without an internet connection. All changes are saved to a local file (`~/.config/gtasks/offline.json`).
