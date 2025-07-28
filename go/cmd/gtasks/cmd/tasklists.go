@@ -150,7 +150,9 @@ var deleteTasklistCmd = &cobra.Command{
 var printTaskListCmd = &cobra.Command{
 	Use:   "print [ID]",
 	Short: "Print a property of a task list",
-	Args:  cobra.ExactArgs(1),
+	Long: `Print a property of a task list.
+Available properties: id, title, selfLink`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		client, err := gtasks.NewClient(cmd, context.Background())
 		if err != nil {
