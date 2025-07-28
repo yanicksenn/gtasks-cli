@@ -11,8 +11,8 @@ import (
 	"google.golang.org/api/tasks/v1"
 )
 
-// captureOutput is a helper to capture stdout from a function.
-func captureOutput(t *testing.T, f func()) string {
+// CaptureOutput is a helper to capture stdout from a function.
+func CaptureOutput(t *testing.T, f func()) string {
 	t.Helper()
 	oldStdout := os.Stdout
 	r, w, _ := os.Pipe()

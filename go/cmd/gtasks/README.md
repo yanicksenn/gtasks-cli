@@ -108,6 +108,14 @@ Permanently deletes a task list and all of its tasks.
 - **Arguments:**
   - `<tasklist_id>` (required): The ID of the task list to delete.
 
+#### `gtasks tasklists print`
+Prints a specific property of a task list to standard output.
+- **Usage:** `gtasks tasklists print <tasklist_id> --property <property_name>`
+- **Arguments:**
+  - `<tasklist_id>` (required): The ID of the task list.
+- **Flags:**
+  - `--property` (string, required): The property to print (e.g., `id`, `title`, `selfLink`).
+
 ---
 
 ### Task Management
@@ -173,6 +181,15 @@ Permanently deletes a task.
   - `<task_id>` (required): The ID of the task.
 - **Flags:**
   - `--tasklist` (string, optional): The ID of the task list. Defaults to `@default`.
+
+#### `gtasks tasks print`
+Prints a specific property of a task to standard output.
+- **Usage:** `gtasks tasks print <task_id> --property <property_name> [--tasklist <tasklist_id>]`
+- **Arguments:**
+  - `<task_id>` (required): The ID of the task.
+- **Flags:**
+  - `--tasklist` (string, optional): The ID of the task list. Defaults to `@default`.
+  - `--property` (string, required): The property to print (e.g., `id`, `title`, `notes`, `due`, `status`, `selfLink`).
 
 ## 6. Implementation Details
 

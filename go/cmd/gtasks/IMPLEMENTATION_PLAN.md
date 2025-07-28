@@ -38,6 +38,7 @@ This is the planned layout of the Go source files within the `go/cmd/gtasks/` di
 │   │   └── config.go    # Manages user configuration (e.g., active account).
 │   └── gtasks/
 │       ├── client.go    # The main client wrapper for the Google Tasks service.
+│       ├── print.go     # Business logic for the print command.
 │       ├── tasklists.go # Business logic for tasklist operations.
 │       └── tasks.go     # Business logic for task operations.
 └── main.go              # Main application entry point.

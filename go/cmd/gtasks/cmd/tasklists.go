@@ -147,6 +147,35 @@ var deleteTasklistCmd = &cobra.Command{
 	},
 }
 
+var printTaskListCmd = &cobra.Command{
+	Use:   "print [ID]",
+	Short: "Print a property of a task list",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		client, err := gtasks.NewClient(cmd, context.Background())
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error creating client: %v\n", err)
+			os.Exit(1)
+		}
+
+		opts := gtasks.GetTaskListOptions{
+			TaskListID: args[0],
+		}
+
+		list, err := client.GetTaskList(opts)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error getting task list: %v\n", err)
+			os.Exit(1)
+		}
+
+		property, _ := cmd.Flags().GetString("property")
+		if err := gtasks.PrintTaskListProperty(list, property); err != nil {
+			fmt.Fprintf(os.Stderr, "Error printing property: %v\n", err)
+			os.Exit(1)
+		}
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(tasklistsCmd)
 	tasklistsCmd.AddCommand(listTasklistsCmd)
@@ -154,10 +183,14 @@ func init() {
 	tasklistsCmd.AddCommand(createTasklistCmd)
 	tasklistsCmd.AddCommand(updateTasklistCmd)
 	tasklistsCmd.AddCommand(deleteTasklistCmd)
+	tasklistsCmd.AddCommand(printTaskListCmd)
 
 	createTasklistCmd.Flags().String("title", "", "The title of the new task list")
 	createTasklistCmd.MarkFlagRequired("title")
 
 	updateTasklistCmd.Flags().String("title", "", "The new title for the task list")
 	updateTasklistCmd.MarkFlagRequired("title")
+
+	printTaskListCmd.Flags().String("property", "", "The property to print")
+	printTaskListCmd.MarkFlagRequired("property")
 }

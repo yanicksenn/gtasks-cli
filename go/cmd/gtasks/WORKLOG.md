@@ -28,3 +28,5 @@ This document provides a high-level, chronological summary of the major features
 ## Feature Additions
 
 -   **Uncomplete Task Command:** Added a `gtasks tasks uncomplete` command to mark a completed task as `needsAction`.
+
+-   **Print Command:** Added a `gtasks tasklists print` and `gtasks tasks print` command to print a specific property of a resource to standard output.

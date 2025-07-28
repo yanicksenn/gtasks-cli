@@ -235,6 +235,37 @@ var deleteTaskCmd = &cobra.Command{
 	},
 }
 
+var printTaskCmd = &cobra.Command{
+	Use:   "print [ID]",
+	Short: "Print a property of a task",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		client, err := gtasks.NewClient(cmd, context.Background())
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error creating client: %v\n", err)
+			os.Exit(1)
+		}
+
+		tasklist, _ := cmd.Flags().GetString("tasklist")
+		opts := gtasks.GetTaskOptions{
+			TaskListID: tasklist,
+			TaskID:     args[0],
+		}
+
+		task, err := client.GetTask(opts)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error getting task: %v\n", err)
+			os.Exit(1)
+		}
+
+		property, _ := cmd.Flags().GetString("property")
+		if err := gtasks.PrintTaskProperty(task, property); err != nil {
+			fmt.Fprintf(os.Stderr, "Error printing property: %v\n", err)
+			os.Exit(1)
+		}
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(tasksCmd)
 	tasksCmd.AddCommand(listTasksCmd)
@@ -244,6 +275,7 @@ func init() {
 	tasksCmd.AddCommand(completeTaskCmd)
 	tasksCmd.AddCommand(uncompleteTaskCmd)
 	tasksCmd.AddCommand(deleteTaskCmd)
+	tasksCmd.AddCommand(printTaskCmd)
 
 	listTasksCmd.Flags().String("tasklist", "@default", "The ID of the task list")
 	listTasksCmd.Flags().Bool("show-completed", false, "Include completed tasks in the output")
@@ -267,4 +299,8 @@ func init() {
 	uncompleteTaskCmd.Flags().String("tasklist", "@default", "The ID of the task list")
 
 	deleteTaskCmd.Flags().String("tasklist", "@default", "The ID of the task list")
+
+	printTaskCmd.Flags().String("tasklist", "@default", "The ID of the task list")
+	printTaskCmd.Flags().String("property", "", "The property to print")
+	printTaskCmd.MarkFlagRequired("property")
 }

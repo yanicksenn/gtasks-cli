@@ -19,7 +19,7 @@ func TestTasksLifecycle(t *testing.T) {
 
 	// 1. Create a task list to work with
 	var taskListID string
-	output := captureOutput(t, func() {
+	output := CaptureOutput(t, func() {
 		opts := CreateTaskListOptions{Title: "Shopping List"}
 		list, err := client.CreateTaskList(opts)
 		if err != nil {
@@ -29,7 +29,7 @@ func TestTasksLifecycle(t *testing.T) {
 	})
 
 	// 2. Initial list of tasks should be empty
-	output = captureOutput(t, func() {
+	output = CaptureOutput(t, func() {
 		opts := ListTasksOptions{TaskListID: taskListID}
 		tasks, err := client.ListTasks(opts)
 		if err != nil {
@@ -43,7 +43,7 @@ func TestTasksLifecycle(t *testing.T) {
 
 	// 3. Create a task
 	var taskID string
-	output = captureOutput(t, func() {
+	output = CaptureOutput(t, func() {
 		opts := CreateTaskOptions{TaskListID: taskListID, Title: "Buy Milk"}
 		task, err := client.CreateTask(opts)
 		if err != nil {
@@ -53,7 +53,7 @@ func TestTasksLifecycle(t *testing.T) {
 	})
 
 	// 4. List should now contain the new task
-	output = captureOutput(t, func() {
+	output = CaptureOutput(t, func() {
 		opts := ListTasksOptions{TaskListID: taskListID}
 		tasks, err := client.ListTasks(opts)
 		if err != nil {
@@ -66,7 +66,7 @@ func TestTasksLifecycle(t *testing.T) {
 	}
 
 	// 5. Get the task by ID
-	output = captureOutput(t, func() {
+	output = CaptureOutput(t, func() {
 		opts := GetTaskOptions{TaskListID: taskListID, TaskID: taskID}
 		task, err := client.GetTask(opts)
 		if err != nil {
@@ -79,7 +79,7 @@ func TestTasksLifecycle(t *testing.T) {
 	}
 
 	// 6. Update the task
-	output = captureOutput(t, func() {
+	output = CaptureOutput(t, func() {
 		opts := UpdateTaskOptions{TaskListID: taskListID, TaskID: taskID, Title: "Buy Almond Milk"}
 		_, err := client.UpdateTask(opts)
 		if err != nil {
@@ -88,7 +88,7 @@ func TestTasksLifecycle(t *testing.T) {
 	})
 
 	// 7. Complete the task
-	output = captureOutput(t, func() {
+	output = CaptureOutput(t, func() {
 		opts := CompleteTaskOptions{TaskListID: taskListID, TaskID: taskID}
 		_, err := client.CompleteTask(opts)
 		if err != nil {
@@ -97,7 +97,7 @@ func TestTasksLifecycle(t *testing.T) {
 	})
 
 	// 8. List should show the task as completed
-	output = captureOutput(t, func() {
+	output = CaptureOutput(t, func() {
 		opts := ListTasksOptions{TaskListID: taskListID, ShowCompleted: true}
 		tasks, err := client.ListTasks(opts)
 		if err != nil {
@@ -110,7 +110,7 @@ func TestTasksLifecycle(t *testing.T) {
 	}
 
 	// 9. Uncomplete the task
-	output = captureOutput(t, func() {
+	output = CaptureOutput(t, func() {
 		opts := UncompleteTaskOptions{TaskListID: taskListID, TaskID: taskID}
 		_, err := client.UncompleteTask(opts)
 		if err != nil {
@@ -119,7 +119,7 @@ func TestTasksLifecycle(t *testing.T) {
 	})
 
 	// 10. List should show the task as not completed
-	output = captureOutput(t, func() {
+	output = CaptureOutput(t, func() {
 		opts := ListTasksOptions{TaskListID: taskListID, ShowCompleted: true}
 		tasks, err := client.ListTasks(opts)
 		if err != nil {
@@ -132,7 +132,7 @@ func TestTasksLifecycle(t *testing.T) {
 	}
 
 	// 11. Delete the task
-	output = captureOutput(t, func() {
+	output = CaptureOutput(t, func() {
 		opts := DeleteTaskOptions{TaskListID: taskListID, TaskID: taskID}
 		err := client.DeleteTask(opts)
 		if err != nil {
@@ -141,7 +141,7 @@ func TestTasksLifecycle(t *testing.T) {
 	})
 
 	// 12. Final list of tasks should be empty again
-	output = captureOutput(t, func() {
+	output = CaptureOutput(t, func() {
 		opts := ListTasksOptions{TaskListID: taskListID}
 		tasks, err := client.ListTasks(opts)
 		if err != nil {
@@ -151,6 +151,52 @@ func TestTasksLifecycle(t *testing.T) {
 	})
 	if !strings.Contains(output, "No tasks found.") {
 		t.Errorf("expected empty list, got '%s'", output)
+	}
+}
+
+func TestTaskPrint(t *testing.T) {
+	server := newMockServer()
+	defer server.Close()
+
+	client, err := newTestClient(server.URL)
+	if err != nil {
+		t.Fatalf("failed to create test client: %v", err)
+	}
+
+	// 1. Create a task list to work with
+	var taskListID string
+	CaptureOutput(t, func() {
+		opts := CreateTaskListOptions{Title: "Shopping List"}
+		list, err := client.CreateTaskList(opts)
+		if err != nil {
+			t.Fatalf("CreateTaskList failed: %v", err)
+		}
+		taskListID = list.Id
+	})
+
+	// 2. Create a task
+	var taskID string
+	CaptureOutput(t, func() {
+		opts := CreateTaskOptions{TaskListID: taskListID, Title: "Buy Milk"}
+		task, err := client.CreateTask(opts)
+		if err != nil {
+			t.Fatalf("CreateTask failed: %v", err)
+		}
+		taskID = task.Id
+	})
+
+	// 3. Print the title
+	output := CaptureOutput(t, func() {
+		task, err := client.GetTask(GetTaskOptions{TaskListID: taskListID, TaskID: taskID})
+		if err != nil {
+			t.Fatalf("GetTask failed: %v", err)
+		}
+		if err := PrintTaskProperty(task, "title"); err != nil {
+			t.Fatalf("PrintTaskProperty failed: %v", err)
+		}
+	})
+	if !strings.Contains(output, "Buy Milk") {
+		t.Errorf("expected output to contain 'Buy Milk', got '%s'", output)
 	}
 }
 
