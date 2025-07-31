@@ -48,12 +48,7 @@ func newOnlineClient(ctx context.Context) (*onlineClient, error) {
 		return nil, err
 	}
 
-	authenticator, err := auth.NewAuthenticator()
-	if err != nil {
-		return nil, err
-	}
-
-	httpClient, err := authenticator.GetClient(ctx, cfg.ActiveAccount)
+	httpClient, err := auth.GetClient(ctx, cfg.ActiveAccount)
 	if err != nil {
 		return nil, err
 	}

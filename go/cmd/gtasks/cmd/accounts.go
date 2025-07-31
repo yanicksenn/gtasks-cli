@@ -19,25 +19,7 @@ var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Authenticate with Google and add a new account",
 	Run: func(cmd *cobra.Command, args []string) {
-		// This command does not support offline mode
-		authenticator, err := auth.NewAuthenticator()
-		if err != nil {
-			// This error is likely due to missing credentials.json
-			fmt.Println("To authenticate with Google Tasks, you need to create your own OAuth 2.0 Client ID.")
-			fmt.Println("Please visit the following URL to create your credentials:")
-			fmt.Println("https://developers.google.com/tasks/docs/create-credentials")
-			fmt.Println("\nOnce you have your credentials, please create a file at `~/.config/credentials.json` with the following format:")
-			fmt.Println(`{
-"installed": {
-"client_id": "YOUR_CLIENT_ID",
-"client_secret": "YOUR_CLIENT_SECRET"
-}
-}`)
-			fmt.Fprintf(os.Stderr, "\nError: %v\n", err)
-			os.Exit(1)
-		}
-
-		_, user, err := authenticator.NewClient(context.Background())
+		user, err := auth.LoginViaWebFlow(context.Background())
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error during authentication: %v\n", err)
 			os.Exit(1)

@@ -1,174 +1,61 @@
-# gtasks CLI - Implementation Plan
+# Implementation Plan: Web-Based Authentication Flow
 
-**Related Documents:**
-- [Software Design (`DESIGN.md`)](./DESIGN.md)
-
----
-
-## Table of Contents
-
-- [1. File Structure](#1-file-structure)
-- [2. Key Data Structures](#2-key-data-structures)
-  - [Configuration & Authentication Structs](#configuration--authentication-structs)
-  - [TaskList Management Structs](#tasklist-management-structs)
-  - [Task Management Structs](#task-management-structs)
+**Objective:** Replace the current local OAuth 2.0 flow in `gtasks-cli` with a modern, web-based authentication flow that relies on an external service.
 
 ---
 
-This document lists the expected files and data structures required to build the `gtasks` CLI, based on the `DESIGN.md`.
+### 1. Dependency Management
 
-## 1. File Structure
+-   **Action:** Add the `github.com/pkg/browser` dependency to the project.
+-   **Command:** `go get github.com/pkg/browser`
+-   **Purpose:** To reliably open the user's default web browser to the authentication URL.
 
-This is the planned layout of the Go source files within the `go/cmd/gtasks/` directory.
+### 2. Create the Web Authentication Handler
 
-```
-.
-├── DESIGN.md
-├── IMPLEMENTATION_PLAN.md
-├── README.md
-├── cmd/
-│   ├── accounts.go      # `gtasks accounts` commands (list, switch)
-│   ├── root.go          # Root `gtasks` command and global flags
-│   ├── tasklists.go     # `gtasks tasklists` commands (list, create, get, etc.)
-│   └── tasks.go         # `gtasks tasks` commands (list, create, get, etc.)
-├── internal/
-│   ├── auth/
-│   │   └── auth.go      # Handles OAuth2 flow, token storage, and client creation.
-│   ├── config/
-│   │   └── config.go    # Manages user configuration (e.g., active account).
-│   └── gtasks/
-│       ├── client.go    # The main client wrapper for the Google Tasks service.
-│       ├── print.go     # Business logic for the print command.
-│       ├── tasklists.go # Business logic for tasklist operations.
-│       └── tasks.go     # Business logic for task operations.
-└── main.go              # Main application entry point.
-```
+-   **File:** `go/cmd/gtasks/internal/auth/web.go`
+-   **Function:** `LoginViaWebFlow(ctx context.Context) (string, error)`
+-   **Details:**
+    1.  **Constants:** Define the `authServiceURL` (`https://oauth-hub-dev...`) and the local `redirectURI` (`http://localhost:8080/callback`).
+    2.  **Local Server:**
+        -   Start a local HTTP server on port `8080`.
+        -   Create a `/callback` handler.
+        -   Use a `chan` to signal the main function when the callback is received.
+    3.  **Browser Interaction:**
+        -   Construct the full login URL (e.g., `[authServiceURL]/login/gtasks`).
+        -   Use `browser.OpenURL()` to open the URL.
+        -   Provide a fallback message printing the URL to the console in case the browser cannot be opened automatically.
+    4.  **Callback Handling:**
+        -   The `/callback` handler will read the `access_token` and `refresh_token` from the request's query parameters.
+        -   It will send these tokens back to the main `LoginViaWebFlow` function via the channel.
+    5.  **User Info & Token Caching:**
+        -   Once the tokens are received, use them to create an OAuth2 client.
+        -   Call the Google User Info API to get the user's email address.
+        -   Save the tokens to the `gtasks-token.json` cache, keyed by the user's email.
+    6.  **Return Value:** Return the user's email on success or an error if any step fails.
 
-## 2. Key Data Structures
+### 3. Modify the `login` Command
 
-These are the primary structs that will be used to pass data between the CLI and the business logic layers.
+-   **File:** `go/cmd/gtasks/cmd/accounts.go`
+-   **Target:** The `loginCmd.Run` function.
+-   **Modifications:**
+    1.  **Remove Old Logic:** Delete all code related to `auth.NewAuthenticator()` and the instructions for creating `credentials.json`.
+    2.  **Call New Flow:** Replace the old logic with a single call to `auth.LoginViaWebFlow(context.Background())`.
+    3.  **Update User Feedback:** Change the print statements to inform the user that their browser is opening and to provide success or failure messages based on the result of the web flow.
 
-### Configuration & Authentication Structs
+### 4. Refactor Existing Authentication Code
 
-Located in `internal/config/config.go`:
-```go
-// Config represents the application's configuration.
-type Config struct {
-    ActiveAccount string `json:"active_account"`
-}
-```
+-   **File:** `go/cmd/gtasks/internal/auth/auth.go`
+-   **Actions:**
+    1.  **Remove `NewAuthenticator`:** Delete the `NewAuthenticator` struct and the `NewAuthenticator()` constructor.
+    2.  **Remove `NewClient`:** Delete the `NewClient` method, as its functionality is now handled by `LoginViaWebFlow`.
+    3.  **Remove `loadCredentials`:** Delete the `Credentials` struct and the `loadCredentials` function, as the CLI no longer uses a local `credentials.json`.
+    4.  **Preserve Core Utilities:** Keep the functions for token cache management (`loadTokenCache`, `save`, `saveAll`) and account management (`Logout`, `ListAccounts`), as they are still needed.
 
-Located in `internal/auth/auth.go`:
-```go
-// TokenCache represents the structure of the credentials file.
-// It maps a user's email to their OAuth2 token.
-type TokenCache struct {
-    Tokens map[string]*oauth2.Token `json:"tokens"`
-}
-```
+### 5. Update Tests
 
-### TaskList Management Structs
-
-Located in `internal/gtasks/tasklists.go`.
-
-#### **List TaskLists**
-- **API Documentation:** [`tasklists.list`](https://developers.google.com/tasks/reference/rest/v1/tasklists/list)
-- No options struct needed for this operation.
-
-#### **Get TaskList**
-- **API Documentation:** [`tasklists.get`](https://developers.google.com/tasks/reference/rest/v1/tasklists/get)
-```go
-type GetTaskListOptions struct {
-    TaskListID string
-}
-```
-
-#### **Create TaskList**
-- **API Documentation:** [`tasklists.insert`](https://developers.google.com/tasks/reference/rest/v1/tasklists/insert)
-```go
-type CreateTaskListOptions struct {
-    Title string
-}
-```
-
-#### **Update TaskList**
-- **API Documentation:** [`tasklists.update`](https://developers.google.com/tasks/reference/rest/v1/tasklists/update)
-```go
-type UpdateTaskListOptions struct {
-    TaskListID string
-    Title      string
-}
-```
-
-#### **Delete TaskList**
-- **API Documentation:** [`tasklists.delete`](https://developers.google.com/tasks/reference/rest/v1/tasklists/delete)
-```go
-type DeleteTaskListOptions struct {
-    TaskListID string
-}
-```
-
-### Task Management Structs
-
-Located in `internal/gtasks/tasks.go`.
-
-#### **List Tasks**
-- **API Documentation:** [`tasks.list`](https://developers.google.com/tasks/reference/rest/v1/tasks/list)
-```go
-type ListTasksOptions struct {
-    TaskListID     string
-    ShowCompleted  bool
-    ShowHidden     bool
-}
-```
-
-#### **Get Task**
-- **API Documentation:** [`tasks.get`](https://developers.google.com/tasks/reference/rest/v1/tasks/get)
-```go
-type GetTaskOptions struct {
-    TaskListID string
-    TaskID     string
-}
-```
-
-#### **Create Task**
-- **API Documentation:** [`tasks.insert`](https://developers.google.com/tasks/reference/rest/v1/tasks/insert)
-```go
-type CreateTaskOptions struct {
-    TaskListID string
-    Title      string
-    Notes      string
-    Due        string // Using string for simplicity, will be parsed to RFC3339
-}
-```
-
-#### **Update Task**
-- **API Documentation:** [`tasks.update`](https://developers.google.com/tasks/reference/rest/v1/tasks/update)
-```go
-type UpdateTaskOptions struct {
-    TaskListID string
-    TaskID     string
-    Title      string
-    Notes      string
-    Due        string
-}
-```
-
-#### **Complete Task**
-- **Note:** This is an `update` operation that sets the task `status` to `"completed"`.
-- **API Documentation:** [`tasks.update`](https://developers.google.com/tasks/reference/rest/v1/tasks/update)
-```go
-type CompleteTaskOptions struct {
-    TaskListID string
-    TaskID     string
-}
-```
-
-#### **Delete Task**
-- **API Documentation:** [`tasks.delete`](https://developers.google.com/tasks/reference/rest/v1/tasks/delete)
-```go
-type DeleteTaskOptions struct {
-    TaskListID string
-    TaskID     string
-}
-```
+-   **Action:** Modify the tests for the `login` command to accommodate the new asynchronous, web-based flow.
+-   **Strategy:**
+    -   The test will need to run a mock HTTP server that simulates the external auth service.
+    -   When the `login` command is executed in the test, it will open the browser to the mock server's URL.
+    -   The mock server will then make a request to the CLI's local `/callback` endpoint, providing dummy tokens.
+    -   The test will assert that the correct user email is returned and that the tokens are cached correctly.
