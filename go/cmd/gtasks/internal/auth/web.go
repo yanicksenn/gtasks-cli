@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/pkg/browser"
 	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 	oauth2_v2 "google.golang.org/api/oauth2/v2"
 )
@@ -34,25 +34,27 @@ func LoginViaWebFlow(ctx context.Context) (string, error) {
 			return
 		}
 
-		accessToken := query.Get("access_token")                                     
-        refreshToken := query.Get("refresh_token")                                   
-        tokenType := query.Get("token_type")                                         
-        expiresInStr := query.Get("expires_in")                                     
-        if accessToken == "" {                                                       
-            http.Error(w, "Missing access_token", http.StatusBadRequest)             
-            errChan <- fmt.Errorf("callback did not return access_token")   
+		authCode := query.Get("code")
+		if authCode == "" {
+			http.Error(w, "Missing authorization code", http.StatusBadRequest)
+			errChan <- fmt.Errorf("callback did not return authorization code")
 			return
 		}
 
-        expiresIn, _ := strconv.Atoi(expiresInStr)                                  
-        expiry := time.Now().Add(time.Duration(expiresIn) * time.Second)            
-                                                                                    
-        token := &oauth2.Token{                                                     
-            AccessToken:  accessToken,                                              
-            RefreshToken: refreshToken,                                             
-            TokenType:    tokenType,                                                
-            Expiry:       expiry,                                                   
-        }                                                                                                                                    
+		config := &oauth2.Config{
+			ClientID:     "YOUR_CLIENT_ID",     // TODO: Replace with your client ID
+			ClientSecret: "YOUR_CLIENT_SECRET", // TODO: Replace with your client secret
+			RedirectURL:  redirectURI,
+			Scopes:       []string{"https://www.googleapis.com/auth/tasks", "https://www.googleapis.com/auth/tasks.readonly", "https://www.googleapis.com/auth/userinfo.email"},
+			Endpoint:     google.Endpoint,
+		}
+
+		token, err := config.Exchange(ctx, authCode)
+		if err != nil {
+			http.Error(w, "Failed to exchange authorization code for token", http.StatusInternalServerError)
+			errChan <- fmt.Errorf("failed to exchange authorization code for token: %w", err)
+			return
+		}                                                                                                                                    
 
 		fmt.Fprintln(w, "Authentication successful! You can close this window.")
 		tokenChan <- token

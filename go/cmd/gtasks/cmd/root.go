@@ -18,6 +18,11 @@ var rootCmd = &cobra.Command{
 			fmt.Println(version.Get())
 			os.Exit(0)
 		}
+
+		if len(args) == 0 {
+			cmd.Help()
+			os.Exit(0)
+		}
 	},
 }
 

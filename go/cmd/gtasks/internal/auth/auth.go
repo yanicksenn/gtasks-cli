@@ -34,9 +34,11 @@ func GetClient(ctx context.Context, user string) (*http.Client, error) {
 	}
 
 	config := &oauth2.Config{
-		RedirectURL: "http://localhost:8080/callback",
-		Scopes:      []string{"https://www.googleapis.com/auth/tasks", "https://www.googleapis.com/auth/tasks.readonly", "https://www.googleapis.com/auth/userinfo.email"},
-		Endpoint:    google.Endpoint,
+		ClientID:     "YOUR_CLIENT_ID",     // TODO: Replace with your client ID
+		ClientSecret: "YOUR_CLIENT_SECRET", // TODO: Replace with your client secret
+		RedirectURL:  "http://localhost:8080/callback",
+		Scopes:       []string{"https://www.googleapis.com/auth/tasks", "https://www.googleapis.com/auth/tasks.readonly", "https://www.googleapis.com/auth/userinfo.email"},
+		Endpoint:     google.Endpoint,
 	}
 
 	return config.Client(ctx, token), nil
