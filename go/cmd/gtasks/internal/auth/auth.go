@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -9,16 +10,48 @@ import (
 	"path/filepath"
 
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
 )
 
 const (
 	tokenFile       = "gtasks-token.json"
+	exchangeURL     = "https://oauth-hub-dev-849914933450.us-central1.run.app/exchange/gtasks_cli.json"
 )
 
 // ErrCredentialsNotFound is returned when the user's credentials are not found.
 var ErrCredentialsNotFound = errors.New("credentials not found. Please run 'gtasks login'")
 
+type customTokenSource struct {
+	token *oauth2.Token
+}
+
+func (s *customTokenSource) Token() (*oauth2.Token, error) {
+	if s.token.Valid() {
+		return s.token, nil
+	}
+
+	reqBody, err := json.Marshal(map[string]string{"refresh_token": s.token.RefreshToken})
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := http.Post(exchangeURL, "application/json", bytes.NewBuffer(reqBody))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New("failed to refresh token")
+	}
+
+	var newToken oauth2.Token
+	if err := json.NewDecoder(resp.Body).Decode(&newToken); err != nil {
+		return nil, err
+	}
+
+	s.token = &newToken
+	return s.token, nil
+}
 
 // GetClient returns an authenticated HTTP client for the given user.
 // If the user has no token, it initiates the login flow.
@@ -33,15 +66,8 @@ func GetClient(ctx context.Context, user string) (*http.Client, error) {
 		return nil, ErrCredentialsNotFound
 	}
 
-	config := &oauth2.Config{
-		ClientID:     "YOUR_CLIENT_ID",     // TODO: Replace with your client ID
-		ClientSecret: "YOUR_CLIENT_SECRET", // TODO: Replace with your client secret
-		RedirectURL:  "http://localhost:8080/callback",
-		Scopes:       []string{"https://www.googleapis.com/auth/tasks", "https://www.googleapis.com/auth/tasks.readonly", "https://www.googleapis.com/auth/userinfo.email"},
-		Endpoint:     google.Endpoint,
-	}
-
-	return config.Client(ctx, token), nil
+	tokenSource := &customTokenSource{token: token}
+	return oauth2.NewClient(ctx, tokenSource), nil
 }
 
 // Logout removes the token for the given user from the cache.

@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -9,19 +10,19 @@ import (
 
 	"github.com/pkg/browser"
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 	oauth2_v2 "google.golang.org/api/oauth2/v2"
 )
 
 const (
-	authServiceURL = "https://oauth-hub-dev-849914933450.us-central1.run.app/project1"
-	redirectURI    = "http://localhost:8080/callback"
+	oauthServiceURL = "https://oauth-hub-dev-849914933450.us-central1.run.app/oauth/gtasks_cli.json"
+	exchangeServiceURL = "https://oauth-hub-dev-849914933450.us-central1.run.app/exchange/gtasks_cli.json"
+	authRedirectURI    = "http://localhost:8080/callback"
 )
 
 // LoginViaWebFlow orchestrates the web-based authentication process.
 func LoginViaWebFlow(ctx context.Context) (string, error) {
-	tokenChan := make(chan *oauth2.Token) 
+	tokenChan := make(chan *oauth2.Token)
 	errChan := make(chan error)
 
 	server := &http.Server{Addr: ":8080"}
@@ -41,23 +42,30 @@ func LoginViaWebFlow(ctx context.Context) (string, error) {
 			return
 		}
 
-		config := &oauth2.Config{
-			ClientID:     "YOUR_CLIENT_ID",     // TODO: Replace with your client ID
-			ClientSecret: "YOUR_CLIENT_SECRET", // TODO: Replace with your client secret
-			RedirectURL:  redirectURI,
-			Scopes:       []string{"https://www.googleapis.com/auth/tasks", "https://www.googleapis.com/auth/tasks.readonly", "https://www.googleapis.com/auth/userinfo.email"},
-			Endpoint:     google.Endpoint,
-		}
-
-		token, err := config.Exchange(ctx, authCode)
+		exchangeURL := fmt.Sprintf("%s?code=%s&redirect_uri=%s", exchangeServiceURL, authCode, authRedirectURI)
+		resp, err := http.Post(exchangeURL, "application/json", nil)
 		if err != nil {
 			http.Error(w, "Failed to exchange authorization code for token", http.StatusInternalServerError)
 			errChan <- fmt.Errorf("failed to exchange authorization code for token: %w", err)
 			return
-		}                                                                                                                                    
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			http.Error(w, "Failed to exchange authorization code for token", http.StatusInternalServerError)
+			errChan <- fmt.Errorf("token exchange failed with status: %s", resp.Status)
+			return
+		}
+
+		var token oauth2.Token
+		if err := json.NewDecoder(resp.Body).Decode(&token); err != nil {
+			http.Error(w, "Failed to decode token response", http.StatusInternalServerError)
+			errChan <- fmt.Errorf("failed to decode token response: %w", err)
+			return
+		}
 
 		fmt.Fprintln(w, "Authentication successful! You can close this window.")
-		tokenChan <- token
+		tokenChan <- &token
 	})
 
 	go func() {
@@ -71,7 +79,7 @@ func LoginViaWebFlow(ctx context.Context) (string, error) {
 		server.Shutdown(shutdownCtx)
 	}()
 
-	loginURL := fmt.Sprintf("%s?redirect_uri=%s", authServiceURL, redirectURI)
+	loginURL := fmt.Sprintf("%s?redirect_uri=%s", oauthServiceURL, authRedirectURI)
 	fmt.Printf("Your browser should open automatically. If not, please visit:\n%s\n", loginURL)
 	if err := browser.OpenURL(loginURL); err != nil {
 		fmt.Fprintf(os.Stderr, "Warning: could not open browser: %v\n", err)
@@ -87,6 +95,7 @@ func LoginViaWebFlow(ctx context.Context) (string, error) {
 	}
 
 	client := oauth2.NewClient(ctx, oauth2.StaticTokenSource(token))
+	
 	svc, err := oauth2_v2.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
 		return "", fmt.Errorf("unable to create oauth2 service: %w", err)
@@ -107,3 +116,4 @@ func LoginViaWebFlow(ctx context.Context) (string, error) {
 
 	return userInfo.Email, nil
 }
+
