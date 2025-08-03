@@ -2,7 +2,8 @@ package auth
 
 import (
 	"context"
-	"encoding/json"
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"net/http"
 	"os"
@@ -10,24 +11,43 @@ import (
 
 	"github.com/pkg/browser"
 	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 	oauth2_v2 "google.golang.org/api/oauth2/v2"
 )
 
 const (
-	oauthServiceURL = "https://oauth-hub-dev-849914933450.us-central1.run.app/oauth/gtasks_cli.json"
-	exchangeServiceURL = "https://oauth-hub-dev-849914933450.us-central1.run.app/exchange/gtasks_cli.json"
-	authRedirectURI    = "http://localhost:8080/callback"
+	authRedirectURI = "http://localhost:8080/callback"
 )
 
 // LoginViaWebFlow orchestrates the web-based authentication process.
 func LoginViaWebFlow(ctx context.Context) (string, error) {
+	conf := &oauth2.Config{
+		ClientID:     "1021942592516-ddskqoqs4d752kpmrak83vmsq05k5n07.apps.googleusercontent.com",
+		ClientSecret: "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",
+		RedirectURL:  "http://localhost:8080/callback",
+		Scopes:       []string{"https://www.googleapis.com/auth/tasks", "https://www.googleapis.com/auth/tasks.readonly", "https://www.googleapis.com/auth/userinfo.email"},
+		Endpoint:     google.Endpoint,
+	}
+
 	tokenChan := make(chan *oauth2.Token)
 	errChan := make(chan error)
+
+	// Generate state
+	stateBytes := make([]byte, 16)
+	if _, err := rand.Read(stateBytes); err != nil {
+		return "", fmt.Errorf("failed to generate state: %w", err)
+	}
+	state := hex.EncodeToString(stateBytes)
 
 	server := &http.Server{Addr: ":8080"}
 	http.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query()
+		if query.Get("state") != state {
+			http.Error(w, "Invalid state parameter", http.StatusBadRequest)
+			errChan <- fmt.Errorf("invalid state parameter")
+			return
+		}
 		if errStr := query.Get("error"); errStr != "" {
 			errDesc := query.Get("error_description")
 			http.Error(w, fmt.Sprintf("Authentication failed: %s - %s", errStr, errDesc), http.StatusBadRequest)
@@ -42,30 +62,15 @@ func LoginViaWebFlow(ctx context.Context) (string, error) {
 			return
 		}
 
-		exchangeURL := fmt.Sprintf("%s?code=%s&redirect_uri=%s", exchangeServiceURL, authCode, authRedirectURI)
-		resp, err := http.Post(exchangeURL, "application/json", nil)
+		token, err := conf.Exchange(ctx, authCode)
 		if err != nil {
 			http.Error(w, "Failed to exchange authorization code for token", http.StatusInternalServerError)
 			errChan <- fmt.Errorf("failed to exchange authorization code for token: %w", err)
 			return
 		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			http.Error(w, "Failed to exchange authorization code for token", http.StatusInternalServerError)
-			errChan <- fmt.Errorf("token exchange failed with status: %s", resp.Status)
-			return
-		}
-
-		var token oauth2.Token
-		if err := json.NewDecoder(resp.Body).Decode(&token); err != nil {
-			http.Error(w, "Failed to decode token response", http.StatusInternalServerError)
-			errChan <- fmt.Errorf("failed to decode token response: %w", err)
-			return
-		}
 
 		fmt.Fprintln(w, "Authentication successful! You can close this window.")
-		tokenChan <- &token
+		tokenChan <- token
 	})
 
 	go func() {
@@ -79,9 +84,10 @@ func LoginViaWebFlow(ctx context.Context) (string, error) {
 		server.Shutdown(shutdownCtx)
 	}()
 
-	loginURL := fmt.Sprintf("%s?redirect_uri=%s", oauthServiceURL, authRedirectURI)
-	fmt.Printf("Your browser should open automatically. If not, please visit:\n%s\n", loginURL)
-	if err := browser.OpenURL(loginURL); err != nil {
+	authURL := conf.AuthCodeURL(state, oauth2.AccessTypeOffline)
+
+	fmt.Printf("Your browser should open automatically. If not, please visit:\n%s\n", authURL)
+	if err := browser.OpenURL(authURL); err != nil {
 		fmt.Fprintf(os.Stderr, "Warning: could not open browser: %v\n", err)
 	}
 
@@ -95,7 +101,7 @@ func LoginViaWebFlow(ctx context.Context) (string, error) {
 	}
 
 	client := oauth2.NewClient(ctx, oauth2.StaticTokenSource(token))
-	
+
 	svc, err := oauth2_v2.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
 		return "", fmt.Errorf("unable to create oauth2 service: %w", err)
@@ -116,4 +122,3 @@ func LoginViaWebFlow(ctx context.Context) (string, error) {
 
 	return userInfo.Email, nil
 }
-
