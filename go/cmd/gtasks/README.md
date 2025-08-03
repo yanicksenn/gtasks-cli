@@ -18,6 +18,40 @@ A command-line interface (CLI) for managing your Google Tasks.
 
 ---
 
+## Building and Running
+
+### Prerequisites
+
+*   Go 1.20 or later
+
+### Building
+
+To build the `gtasks` binary, run the following command from the `go` directory:
+
+```sh
+go build -o gtasks ./cmd/gtasks
+```
+
+This will place the executable file named `gtasks` inside the `go` directory.
+
+### Running
+
+To run the application, first, you need to authenticate with your Google account:
+
+```sh
+./gtasks accounts login
+```
+
+This will open a browser window for you to complete the authentication process.
+
+Once authenticated, you can use the other commands, for example:
+
+```sh
+./gtasks tasklists list
+```
+
+---
+
 ## 1. Authentication
 
 - **Google Sign-In:** The CLI authenticates with Google using OAuth 2.0.
