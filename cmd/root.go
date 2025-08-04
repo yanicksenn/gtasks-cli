@@ -1,40 +1,34 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/spf13/cobra"
 	"github.com/yanicksenn/gtasks/internal/version"
 )
 
-var rootCmd = &cobra.Command{
+var RootCmd = &cobra.Command{
 	Use:   "gtasks",
 	Short: "A CLI for managing your Google Tasks",
 	Long:  `gtasks is a powerful command-line interface that helps you manage your Google Tasks directly from the terminal.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		v, _ := cmd.Flags().GetBool("version")
 		if v {
-			fmt.Println(version.Get())
-			os.Exit(0)
+			cmd.Println(version.Get())
+			return nil
 		}
 
 		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
+			return cmd.Help()
 		}
+		return nil
 	},
 }
 
 func init() {
-	rootCmd.PersistentFlags().Bool("offline", false, "Enable offline mode")
-	rootCmd.PersistentFlags().BoolP("quiet", "q", false, "Disable output")
-	rootCmd.Flags().BoolP("version", "v", false, "Print the version number")
+	RootCmd.PersistentFlags().Bool("offline", false, "Enable offline mode")
+	RootCmd.PersistentFlags().BoolP("quiet", "q", false, "Disable output")
+	RootCmd.Flags().BoolP("version", "v", false, "Print the version number")
 }
 
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintf(os.Stderr, "Whoops. There was an error while executing your CLI '%s'", err)
-		os.Exit(1)
-	}
+func Execute() error {
+	return RootCmd.Execute()
 }

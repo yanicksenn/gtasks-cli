@@ -15,4 +15,4 @@ bazel-*
 .hg
 
 # Personal
-source_personal.sh
+source_personal.shgtasks
