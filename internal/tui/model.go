@@ -181,6 +181,33 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.SetStatus(msg.Error())
 		return m, nil
 	case tea.KeyMsg:
+		if msg.String() == " " {
+			if m.focused == TasksPane {
+				selectedTask := m.lists[TasksPane].SelectedItem().(taskItem)
+				if selectedTask.Status == "completed" {
+					m.SetStatus("Un-completing task...")
+					selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
+					return m, func() tea.Msg {
+						_, err := m.client.UncompleteTask(gtasks.UncompleteTaskOptions{TaskListID: selectedTaskList.Id, TaskID: selectedTask.Id})
+						if err != nil {
+							return errorMsg{err}
+						}
+						return taskUncompletedMsg{}
+					}
+				} else {
+					m.SetStatus("Completing task...")
+					selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
+					return m, func() tea.Msg {
+						_, err := m.client.CompleteTask(gtasks.CompleteTaskOptions{TaskListID: selectedTaskList.Id, TaskID: selectedTask.Id})
+						if err != nil {
+							return errorMsg{err}
+						}
+						return taskCompletedMsg{}
+					}
+				}
+			}
+		}
+
 		switch keypress := msg.String(); keypress {
 		case "q", "ctrl+c":
 			return m, tea.Quit
@@ -280,31 +307,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.selectedTask = m.lists[TasksPane].SelectedItem().(taskItem)
 				m.state = stateTaskView
 				m.SetStatus("Task View")
-			}
-		case "space":
-			if m.focused == TasksPane {
-				selectedTask := m.lists[TasksPane].SelectedItem().(taskItem)
-				if selectedTask.Status == "completed" {
-					m.SetStatus("Un-completing task...")
-					selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
-					return m, func() tea.Msg {
-						_, err := m.client.UncompleteTask(gtasks.UncompleteTaskOptions{TaskListID: selectedTaskList.Id, TaskID: selectedTask.Id})
-						if err != nil {
-							return errorMsg{err}
-						}
-						return taskUncompletedMsg{}
-					}
-				} else {
-					m.SetStatus("Completing task...")
-					selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
-					return m, func() tea.Msg {
-						_, err := m.client.CompleteTask(gtasks.CompleteTaskOptions{TaskListID: selectedTaskList.Id, TaskID: selectedTask.Id})
-						if err != nil {
-							return errorMsg{err}
-						}
-						return taskCompletedMsg{}
-					}
-				}
 			}
 		case "h", "left":
 			if m.focused == TasksPane {
