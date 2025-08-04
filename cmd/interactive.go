@@ -14,7 +14,7 @@ var interactiveCmd = &cobra.Command{
 	Use:   "interactive",
 	Short: "Start the interactive TUI",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		p := tea.NewProgram(tui.InitialModel())
+		p := tea.NewProgram(tui.New())
 		if _, err := p.Run(); err != nil {
 			return fmt.Errorf("error running program: %w", err)
 		}
