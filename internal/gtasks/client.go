@@ -2,6 +2,9 @@ package gtasks
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"net/http"
 
 	"github.com/spf13/cobra"
 	"github.com/yanicksenn/gtasks/internal/auth"
@@ -48,9 +51,36 @@ func newOnlineClient(ctx context.Context) (*onlineClient, error) {
 		return nil, err
 	}
 
-	httpClient, err := auth.GetClient(ctx, cfg.ActiveAccount)
-	if err != nil {
-		return nil, err
+	var httpClient *http.Client
+	if cfg.ActiveAccount != "" {
+		var getClientErr error
+		httpClient, getClientErr = auth.GetClient(ctx, cfg.ActiveAccount)
+		if getClientErr != nil {
+			if errors.Is(getClientErr, auth.ErrTokenRefreshFailed) || errors.Is(getClientErr, auth.ErrCredentialsNotFound) {
+				httpClient = nil
+			} else {
+				return nil, getClientErr
+			}
+		}
+	}
+
+	if httpClient == nil {
+		fmt.Println("Authentication required. Please follow the instructions to log in.")
+		user, loginErr := auth.LoginViaWebFlow(ctx)
+		if loginErr != nil {
+			return nil, fmt.Errorf("authentication failed: %w", loginErr)
+		}
+
+		cfg.ActiveAccount = user
+		if err := cfg.Save(); err != nil {
+			return nil, fmt.Errorf("failed to save active account: %w", err)
+		}
+
+		var getClientErr error
+		httpClient, getClientErr = auth.GetClient(ctx, user)
+		if getClientErr != nil {
+			return nil, fmt.Errorf("failed to get client after login: %w", getClientErr)
+		}
 	}
 
 	service, err := tasks.NewService(ctx, option.WithHTTPClient(httpClient))

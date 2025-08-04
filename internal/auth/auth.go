@@ -11,6 +11,8 @@ import (
 
 // ErrCredentialsNotFound is returned when the user's credentials are not found.
 var ErrCredentialsNotFound = errors.New("credentials not found. Please run 'gtasks login'")
+var ErrTokenRefreshFailed = errors.New("token refresh failed")
+
 
 // getOAuthConfig returns the OAuth2 configuration for the application.
 func getOAuthConfig() *oauth2.Config {
@@ -36,7 +38,19 @@ func GetClient(ctx context.Context, user string) (*http.Client, error) {
 	}
 
 	conf := getOAuthConfig()
-	return oauth2.NewClient(ctx, conf.TokenSource(ctx, token)), nil
+	ts := conf.TokenSource(ctx, token)
+	newToken, err := ts.Token()
+	if err != nil {
+		return nil, ErrTokenRefreshFailed
+	}
+
+	if newToken.AccessToken != token.AccessToken {
+		if err := cache.save(user, newToken); err != nil {
+			return nil, err
+		}
+	}
+
+	return oauth2.NewClient(ctx, ts), nil
 }
 
 // Logout removes the token for the given user from the cache.
