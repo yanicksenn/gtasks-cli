@@ -26,6 +26,8 @@ type taskDeletedMsg struct{}
 
 type taskCompletedMsg struct{}
 
+type taskUncompletedMsg struct{}
+
 type errorMsg struct {
 	err error
 }
@@ -146,10 +148,20 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return tasksLoadedMsg{tasks: tasks}
 		}
 
+	case taskUncompletedMsg:
+		m.SetStatus("Task un-completed")
+		selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
+		return m, func() tea.Msg {
+			tasks, err := m.client.ListTasks(gtasks.ListTasksOptions{TaskListID: selectedTaskList.Id, ShowCompleted: true})
+			if err != nil {
+				return errorMsg{err}
+			}
+			return tasksLoadedMsg{tasks: tasks}
+		}
+
 	case errorMsg:
 		m.SetStatus(msg.Error())
 		return m, nil
-
 	case tea.KeyMsg:
 		switch keypress := msg.String(); keypress {
 		case "q", "ctrl+c":
@@ -207,15 +219,36 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "c":
 			if m.state == stateDefault && m.focused == TasksPane {
+				selectedTask := m.lists[TasksPane].SelectedItem().(taskItem)
+				if selectedTask.Status == "completed" {
+					m.SetStatus("Task is already completed")
+					return m, nil
+				}
 				m.SetStatus("Completing task...")
 				selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
-				selectedTask := m.lists[TasksPane].SelectedItem().(taskItem)
 				return m, func() tea.Msg {
 					_, err := m.client.CompleteTask(gtasks.CompleteTaskOptions{TaskListID: selectedTaskList.Id, TaskID: selectedTask.Id})
 					if err != nil {
 						return errorMsg{err}
 					}
 					return taskCompletedMsg{}
+				}
+			}
+		case "u":
+			if m.state == stateDefault && m.focused == TasksPane {
+				selectedTask := m.lists[TasksPane].SelectedItem().(taskItem)
+				if selectedTask.Status != "completed" {
+					m.SetStatus("Task is not completed")
+					return m, nil
+				}
+				m.SetStatus("Un-completing task...")
+				selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
+				return m, func() tea.Msg {
+					_, err := m.client.UncompleteTask(gtasks.UncompleteTaskOptions{TaskListID: selectedTaskList.Id, TaskID: selectedTask.Id})
+					if err != nil {
+						return errorMsg{err}
+					}
+					return taskUncompletedMsg{}
 				}
 			}
 		case "y":
