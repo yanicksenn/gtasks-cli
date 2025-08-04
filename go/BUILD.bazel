@@ -1,4 +1,0 @@
-# This file makes the go.mod and go.sum files available to Bazel.
-load("@gazelle//:def.bzl", "gazelle")
-
-gazelle(name = "gazelle")
