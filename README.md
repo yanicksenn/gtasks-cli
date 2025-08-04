@@ -164,11 +164,15 @@ Manage your tasks within a task list.
 
 #### `gtasks tasks list`
 Lists tasks within a specific task list.
-- **Usage:** `gtasks tasks list [--tasklist <tasklist_id>]`
+- **Usage:** `gtasks tasks list [--tasklist <tasklist_id>] [flags]`
 - **Flags:**
   - `--tasklist` (string, optional): The ID of the task list. Defaults to `@default`.
   - `--show-completed` (boolean, optional): Include completed tasks.
   - `--show-hidden` (boolean, optional): Include hidden tasks.
+  - `--title-contains` (string, optional): Filter tasks by title (case-insensitive).
+  - `--notes-contains` (string, optional): Filter tasks by notes (case-insensitive).
+  - `--due-before` (string, optional): Filter tasks with a due date before a specified date (e.g., "2025-12-31").
+  - `--due-after` (string, optional): Filter tasks with a due date after a specified date (e.g., "2025-12-31").
 
 #### `gtasks tasks get`
 Retrieves the details of a specific task.
@@ -272,6 +276,12 @@ Tasks:
 $ ./gtasks tasks list --tasklist "OS0ydmR2N3NpSTQ4SzVVMA"
 Tasks:
 [ ] Buy milk (ZmFyb3FBSzJhUUlRZGJnWg)
+
+# Find all tasks with "buy" in the title
+$ gtasks tasks list --title-contains "buy"
+Tasks:
+[ ] buy toilet cleaners (U0QzVTI3TDFiRXg1NnJoSg)
+[ ] buy shampoo (VlFTcEt1TXItMl9RUDZpRg)
 ```
 
 ### Create a New Task
