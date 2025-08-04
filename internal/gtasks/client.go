@@ -36,9 +36,14 @@ type onlineClient struct {
 	service *tasks.Service
 }
 
-// NewClient creates a new client based on the --offline flag.
-func NewClient(cmd *cobra.Command, ctx context.Context) (Client, error) {
+// NewClientFromCommand creates a new client based on the --offline flag from a cobra command.
+func NewClientFromCommand(cmd *cobra.Command, ctx context.Context) (Client, error) {
 	offline, _ := cmd.Flags().GetBool("offline")
+	return NewClient(ctx, offline)
+}
+
+// NewClient creates a new client based on the offline flag.
+func NewClient(ctx context.Context, offline bool) (Client, error) {
 	if offline {
 		return newOfflineClient()
 	}

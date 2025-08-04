@@ -23,7 +23,7 @@ func NewCommandHelper(cmd *cobra.Command) (*CommandHelper, error) {
 		return nil, err
 	}
 
-	client, err := gtasks.NewClient(cmd, context.Background())
+	client, err := gtasks.NewClientFromCommand(cmd, context.Background())
 	if err != nil {
 		return nil, err
 	}
