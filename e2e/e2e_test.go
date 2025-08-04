@@ -26,6 +26,17 @@ func login() error {
 	return err
 }
 
+var tasklistIDs []string
+
+func cleanup() {
+	for _, id := range tasklistIDs {
+		_, err := execute("tasklists", "delete", id)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "e2e cleanup: failed to delete tasklist %s: %v\n", id, err)
+		}
+	}
+}
+
 func TestMain(m *testing.M) {
 	// Setup: login
 	if err := login(); err != nil {
@@ -35,11 +46,9 @@ func TestMain(m *testing.M) {
 
 	exitVal := m.Run()
 
-	// Teardown: logout
-	_, err := execute("accounts", "logout")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "e2e teardown: failed to logout: %v\n", err)
-	}
+	// Teardown: cleanup created data
+	cleanup()
+
 	os.Exit(exitVal)
 }
 
@@ -75,14 +84,7 @@ func TestTasklists(t *testing.T) {
 		t.Fatalf("could not find task list ID in output: %s", output)
 	}
 	listID := matches[1]
-
-	// Ensure the task list is deleted even if the test fails
-	t.Cleanup(func() {
-		_, err := execute("tasklists", "delete", listID)
-		if err != nil {
-			t.Logf("failed to delete task list %s during cleanup: %v", listID, err)
-		}
-	})
+	tasklistIDs = append(tasklistIDs, listID)
 
 	// List task lists and verify the new one is there
 	output, err = execute("tasklists", "list")
@@ -116,12 +118,7 @@ func TestTasks(t *testing.T) {
 		t.Fatalf("could not find task list ID in output: %s", output)
 	}
 	listID := matches[1]
-	t.Cleanup(func() {
-		_, err := execute("tasklists", "delete", listID)
-		if err != nil {
-			t.Logf("failed to delete task list %s during cleanup: %v", listID, err)
-		}
-	})
+	tasklistIDs = append(tasklistIDs, listID)
 
 	// Create a new task
 	taskTitle := "E2E Test Task"
