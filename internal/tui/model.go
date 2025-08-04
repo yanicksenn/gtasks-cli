@@ -35,6 +35,7 @@ type state int
 const (
 	stateDefault state = iota
 	stateNewTaskList
+	stateDeleteTaskList
 )
 
 type Pane int
@@ -158,6 +159,24 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.state = stateNewTaskList
 				m.SetStatus("New Task List")
 			}
+		case "d":
+			if m.state == stateDefault && m.focused == TaskListsPane {
+				m.state = stateDeleteTaskList
+				m.SetStatus("Delete Task List? (y/n)")
+			}
+		case "y":
+			if m.state == stateDeleteTaskList {
+				m.state = stateDefault
+				m.SetStatus("Deleting task list...")
+				selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
+				return m, func() tea.Msg {
+					err := m.client.DeleteTaskList(gtasks.DeleteTaskListOptions{TaskListID: selectedTaskList.Id})
+					if err != nil {
+						return errorMsg{err}
+					}
+					return m.Init()
+				}
+			}
 		case "enter":
 			if m.focused == TaskListsPane {
 				selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
@@ -170,7 +189,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 		case "esc":
-			if m.state == stateNewTaskList {
+			if m.state == stateNewTaskList || m.state == stateDeleteTaskList {
 				m.state = stateDefault
 				m.SetStatus("Ready")
 			}

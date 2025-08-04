@@ -18,6 +18,14 @@ func (m *Model) View() string {
 		)
 	}
 
+	if m.state == stateDeleteTaskList {
+		return lipgloss.JoinVertical(
+			lipgloss.Top,
+			"Are you sure you want to delete this task list?",
+			m.status,
+		)
+	}
+
 	return lipgloss.JoinVertical(
 		lipgloss.Top,
 		docStyle.Render(
