@@ -26,13 +26,13 @@ A command-line interface (CLI) for managing your Google Tasks.
 
 ### Building
 
-To build the `gtasks` binary, run the following command from the `go` directory:
+To build the `gtasks` binary, run the following command from the root of the project:
 
 ```sh
-go build -o gtasks ./cmd/gtasks
+go build -o gtasks .
 ```
 
-This will place the executable file named `gtasks` inside the `go` directory.
+This will place the executable file named `gtasks` in the project root.
 
 ### Running
 
@@ -249,7 +249,7 @@ For more detailed information on the design and implementation, see the followin
 
 ## 8. Running Tests
 
-To run the full suite of tests, navigate to the `go/` directory and use the following command:
+To run the full suite of tests, use the following command from the root of the project:
 
 ```bash
 go test ./...

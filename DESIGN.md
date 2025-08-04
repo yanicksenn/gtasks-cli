@@ -33,12 +33,13 @@ The application is built in Go and structured around the **Cobra** library. It u
 
 The project follows standard Go conventions:
 ```
-gtasks/
+.
 ├── cmd/          # Cobra command definitions
 ├── internal/
 │   ├── auth/     # Google OAuth2 authentication
 │   ├── config/   # Configuration handling
 │   └── gtasks/   # Core business logic and API clients
+├── e2e/          # End-to-end tests
 └── main.go       # Main application entry point
 ```
 

@@ -30,3 +30,11 @@ This document provides a high-level, chronological summary of the major features
 -   **Uncomplete Task Command:** Added a `gtasks tasks uncomplete` command to mark a completed task as `needsAction`.
 
 -   **Print Command:** Added a `gtasks tasklists print` and `gtasks tasks print` command to print a specific property of a resource to standard output.
+
+## Authentication Flow Overhaul
+
+-   **Web-Based Authentication:** Replaced the local OAuth 2.0 flow with a modern, web-based authentication flow that relies on an embedded client secret.
+-   **Local Callback Server:** The CLI now starts a local server to listen for the redirect from the external authentication service.
+-   **Browser Handling:** The CLI now reliably opens the user's default web browser to the correct authentication URL.
+-   **Refactored `login` Command:** The `accounts login` command now exclusively uses the new `LoginViaWebFlow` function.
+-   **Removed Obsolete Code:** Deleted the old local OAuth logic from `internal/auth/auth.go`.

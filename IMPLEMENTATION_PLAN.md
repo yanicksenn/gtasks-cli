@@ -12,7 +12,7 @@
 
 ### 2. Create the Web Authentication Handler
 
--   **File:** `go/cmd/gtasks/internal/auth/web.go`
+-   **File:** `internal/auth/oauth_flow.go`
 -   **Function:** `LoginViaWebFlow(ctx context.Context) (string, error)`
 -   **Details:**
     1.  **Constants:** Define the `authServiceURL` (`https://oauth-hub-dev...`) and the local `redirectURI` (`http://localhost:8080/callback`).
@@ -35,7 +35,7 @@
 
 ### 3. Modify the `login` Command
 
--   **File:** `go/cmd/gtasks/cmd/accounts.go`
+-   **File:** `cmd/accounts.go`
 -   **Target:** The `loginCmd.Run` function.
 -   **Modifications:**
     1.  **Remove Old Logic:** Delete all code related to `auth.NewAuthenticator()` and the instructions for creating `credentials.json`.
@@ -44,7 +44,7 @@
 
 ### 4. Refactor Existing Authentication Code
 
--   **File:** `go/cmd/gtasks/internal/auth/auth.go`
+-   **File:** `internal/auth/auth.go`
 -   **Actions:**
     1.  **Remove `NewAuthenticator`:** Delete the `NewAuthenticator` struct and the `NewAuthenticator()` constructor.
     2.  **Remove `NewClient`:** Delete the `NewClient` method, as its functionality is now handled by `LoginViaWebFlow`.

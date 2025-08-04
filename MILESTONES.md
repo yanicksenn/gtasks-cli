@@ -8,7 +8,7 @@ This document outlines the high-level milestones for transitioning the `gtasks-c
 
 *Goal: Create the foundational client-side logic for the new authentication method.*
 
--   [x] **Create `internal/auth/web.go`:** This new file will contain the primary function for orchestrating the web-based login process.
+-   [x] **Create `internal/auth/oauth_flow.go`:** This new file will contain the primary function for orchestrating the web-based login process.
 -   [x] **Add Dependencies:** Successfully add and verify the `github.com/pkg/browser` package.
 -   [x] **Implement Local Callback Server:** The CLI must be able to start a local server to listen for the redirect from the external authentication service.
 -   [x] **Implement Browser Handling:** The CLI must be able to reliably open the user's default web browser to the correct authentication URL.
