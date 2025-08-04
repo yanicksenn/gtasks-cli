@@ -59,6 +59,7 @@ type Model struct {
 	status         string
 	state          state
 	newTaskListInput textinput.Model
+	sortBy         []string
 }
 
 func New() (*Model, error) {
@@ -80,10 +81,25 @@ func New() (*Model, error) {
 		lists:          []list.Model{taskLists, tasks},
 		state:          stateDefault,
 		newTaskListInput: newTaskListInput,
+		sortBy:         []string{"alphabetical", "last-modified", "uncompleted-tasks"},
 	}
 	m.SetStatus("Ready")
 	return m, nil
 }
+
+func (m *Model) sort() {
+	if m.focused == TaskListsPane {
+		m.sortBy = append(m.sortBy[1:], m.sortBy[0])
+		m.SetStatus("Sorted by " + m.sortBy[0])
+		m.Init()
+	} else {
+		m.sortBy = append(m.sortBy[1:], m.sortBy[0])
+		m.SetStatus("Sorted by " + m.sortBy[0])
+		m.Update(tasksLoadedMsg{tasks: &taskspb.Tasks{}})
+		m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	}
+}
+
 
 func (m *Model) SetStatus(status string) {
 	m.status = status
@@ -91,7 +107,7 @@ func (m *Model) SetStatus(status string) {
 
 func (m *Model) Init() tea.Cmd {
 	return func() tea.Msg {
-		taskLists, err := m.client.ListTaskLists(gtasks.ListTaskListsOptions{SortBy: "alphabetical"})
+		taskLists, err := m.client.ListTaskLists(gtasks.ListTaskListsOptions{SortBy: m.sortBy[0]})
 		if err != nil {
 			return errorMsg{err}
 		}
@@ -193,6 +209,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		switch keypress := msg.String(); keypress {
+		case "s":
+			if m.state == stateDefault {
+				m.sort()
+			}
 		case "tab":
 			if m.state == stateDefault {
 				m.focused = (m.focused + 1) % 2
@@ -248,7 +268,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.SetStatus("Tasks")
 				selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
 				return m, func() tea.Msg {
-					tasks, err := m.client.ListTasks(gtasks.ListTasksOptions{TaskListID: selectedTaskList.Id, ShowCompleted: true})
+					tasks, err := m.client.ListTasks(gtasks.ListTasksOptions{TaskListID: selectedTaskList.Id, ShowCompleted: true, SortBy: m.sortBy[0]})
 					if err != nil {
 						return errorMsg{err}
 					}
