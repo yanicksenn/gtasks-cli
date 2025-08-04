@@ -28,6 +28,7 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	rootCmd.PersistentFlags().Bool("offline", false, "Enable offline mode")
+	rootCmd.PersistentFlags().BoolP("quiet", "q", false, "Disable output")
 	rootCmd.Flags().BoolP("version", "v", false, "Print the version number")
 }
 

@@ -8,7 +8,10 @@ import (
 )
 
 // PrintTaskListProperty prints a specific property of a task list to stdout.
-func PrintTaskListProperty(list *tasks.TaskList, property string) error {
+func PrintTaskListProperty(list *tasks.TaskList, property string, quiet bool) error {
+	if quiet {
+		return nil
+	}
 	switch strings.ToLower(property) {
 	case "id":
 		fmt.Println(list.Id)
@@ -23,7 +26,10 @@ func PrintTaskListProperty(list *tasks.TaskList, property string) error {
 }
 
 // PrintTaskProperty prints a specific property of a task to stdout.
-func PrintTaskProperty(task *tasks.Task, property string) error {
+func PrintTaskProperty(task *tasks.Task, property string, quiet bool) error {
+	if quiet {
+		return nil
+	}
 	switch strings.ToLower(property) {
 	case "id":
 		fmt.Println(task.Id)

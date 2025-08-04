@@ -41,19 +41,22 @@ var listTasksCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if len(tasks.Items) == 0 {
-			fmt.Println("No tasks found.")
-			return
-		}
+		quiet, _ := cmd.Flags().GetBool("quiet")
+        if !quiet {
+            if len(tasks.Items) == 0 {
+                fmt.Println("No tasks found.")
+                return
+            }
 
-		fmt.Println("Tasks:")
-		for _, item := range tasks.Items {
-			status := " "
-			if item.Status == "completed" {
-				status = "x"
-			}
-			fmt.Printf("[%s] %s (%s)\n", status, item.Title, item.Id)
-		}
+            fmt.Println("Tasks:")
+            for _, item := range tasks.Items {
+                status := " "
+                if item.Status == "completed" {
+                    status = "x"
+                }
+                fmt.Printf("[%s] %s (%s)\n", status, item.Title, item.Id)
+            }
+        }
 	},
 }
 
@@ -80,12 +83,15 @@ var getTaskCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fmt.Printf("ID:      %s\n", task.Id)
-		fmt.Printf("Title:   %s\n", task.Title)
-		fmt.Printf("Status:  %s\n", task.Status)
-		fmt.Printf("Notes:   %s\n", task.Notes)
-		fmt.Printf("Due:     %s\n", task.Due)
-		fmt.Printf("Self:    %s\n", task.SelfLink)
+		quiet, _ := cmd.Flags().GetBool("quiet")
+		if !quiet {
+			fmt.Printf("ID:      %s\n", task.Id)
+			fmt.Printf("Title:   %s\n", task.Title)
+			fmt.Printf("Status:  %s\n", task.Status)
+			fmt.Printf("Notes:   %s\n", task.Notes)
+			fmt.Printf("Due:     %s\n", task.Due)
+			fmt.Printf("Self:    %s\n", task.SelfLink)
+		}
 	},
 }
 
@@ -117,7 +123,10 @@ var createTaskCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fmt.Printf("Successfully created task: %s (%s)\n", createdTask.Title, createdTask.Id)
+		quiet, _ := cmd.Flags().GetBool("quiet")
+		if !quiet {
+			fmt.Printf("Successfully created task: %s (%s)\n", createdTask.Title, createdTask.Id)
+		}
 	},
 }
 
@@ -151,7 +160,10 @@ var updateTaskCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fmt.Printf("Successfully updated task: %s (%s)\n", updatedTask.Title, updatedTask.Id)
+		quiet, _ := cmd.Flags().GetBool("quiet")
+		if !quiet {
+			fmt.Printf("Successfully updated task: %s (%s)\n", updatedTask.Title, updatedTask.Id)
+		}
 	},
 }
 
@@ -178,7 +190,10 @@ var completeTaskCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fmt.Printf("Successfully completed task: %s (%s)\n", completedTask.Title, completedTask.Id)
+		quiet, _ := cmd.Flags().GetBool("quiet")
+		if !quiet {
+			fmt.Printf("Successfully completed task: %s (%s)\n", completedTask.Title, completedTask.Id)
+		}
 	},
 }
 
@@ -205,7 +220,10 @@ var uncompleteTaskCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fmt.Printf("Successfully uncompleted task: %s (%s)\n", uncompletedTask.Title, uncompletedTask.Id)
+		quiet, _ := cmd.Flags().GetBool("quiet")
+		if !quiet {
+			fmt.Printf("Successfully uncompleted task: %s (%s)\n", uncompletedTask.Title, uncompletedTask.Id)
+		}
 	},
 }
 
@@ -231,7 +249,10 @@ var deleteTaskCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fmt.Printf("Successfully deleted task: %s\n", args[0])
+		quiet, _ := cmd.Flags().GetBool("quiet")
+		if !quiet {
+			fmt.Printf("Successfully deleted task: %s\n", args[0])
+		}
 	},
 }
 
@@ -261,10 +282,11 @@ Available properties: id, title, notes, due, status, selfLink`,
 		}
 
 		property, _ := cmd.Flags().GetString("property")
-		if err := gtasks.PrintTaskProperty(task, property); err != nil {
-			fmt.Fprintf(os.Stderr, "Error printing property: %v\n", err)
-			os.Exit(1)
-		}
+        quiet, _ := cmd.Flags().GetBool("quiet")
+        if err := gtasks.PrintTaskProperty(task, property, quiet); err != nil {
+            fmt.Fprintf(os.Stderr, "Error printing property: %v\n", err)
+            os.Exit(1)
+        }
 	},
 }
 
