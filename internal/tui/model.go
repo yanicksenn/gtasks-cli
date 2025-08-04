@@ -24,6 +24,8 @@ type taskListCreatedMsg struct {
 
 type taskDeletedMsg struct{}
 
+type taskCompletedMsg struct{}
+
 type errorMsg struct {
 	err error
 }
@@ -67,13 +69,13 @@ func New() (*Model, error) {
 	newTaskListInput.Placeholder = "New Task List"
 	newTaskListInput.Focus()
 
+	taskLists := list.New([]list.Item{}, itemDelegate{}, 0, 0)
+	tasks := list.New([]list.Item{}, taskItemDelegate{}, 0, 0)
+
 	m := &Model{
 		client:         client,
 		focused:        TaskListsPane,
-		lists: []list.Model{
-			list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0),
-			list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0),
-		},
+		lists:          []list.Model{taskLists, tasks},
 		state:          stateDefault,
 		newTaskListInput: newTaskListInput,
 	}
@@ -124,6 +126,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case taskDeletedMsg:
 		m.SetStatus("Task deleted")
+		selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
+		return m, func() tea.Msg {
+			tasks, err := m.client.ListTasks(gtasks.ListTasksOptions{TaskListID: selectedTaskList.Id})
+			if err != nil {
+				return errorMsg{err}
+			}
+			return tasksLoadedMsg{tasks: tasks}
+		}
+
+	case taskCompletedMsg:
+		m.SetStatus("Task completed")
 		selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
 		return m, func() tea.Msg {
 			tasks, err := m.client.ListTasks(gtasks.ListTasksOptions{TaskListID: selectedTaskList.Id})
@@ -190,6 +203,19 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					m.state = stateDeleteTask
 					m.SetStatus("Delete Task? (y/n)")
+				}
+			}
+		case "c":
+			if m.state == stateDefault && m.focused == TasksPane {
+				m.SetStatus("Completing task...")
+				selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
+				selectedTask := m.lists[TasksPane].SelectedItem().(taskItem)
+				return m, func() tea.Msg {
+					_, err := m.client.CompleteTask(gtasks.CompleteTaskOptions{TaskListID: selectedTaskList.Id, TaskID: selectedTask.Id})
+					if err != nil {
+						return errorMsg{err}
+					}
+					return taskCompletedMsg{}
 				}
 			}
 		case "y":
