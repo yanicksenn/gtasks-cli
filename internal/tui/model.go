@@ -138,6 +138,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case tea.KeyMsg:
+		switch keypress := msg.String(); keypress {
+		case "q", "ctrl+c":
+			return m, tea.Quit
+		}
+
 		if m.state == stateNewTaskList {
 			switch keypress := msg.String(); keypress {
 			case "enter":
@@ -154,6 +159,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "esc":
 				m.state = stateDefault
 				m.SetStatus("Ready")
+				return m, nil
 			}
 		}
 
@@ -162,8 +168,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		switch keypress := msg.String(); keypress {
-		case "q", "ctrl+c":
-			return m, tea.Quit
 		case "tab":
 			if m.state == stateDefault {
 				m.focused = (m.focused + 1) % 2
