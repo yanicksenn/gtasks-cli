@@ -70,6 +70,8 @@ The CLI follows a `gtasks <resource> <action> [flags]` pattern.
 ### Global Flags
 
 - `--offline`: Enable offline mode.
+- `--output` (string, optional): Output format. One of `table`, `json`, or `yaml`. Defaults to `table`.
+- `--quiet`, `-q` (boolean, optional): Suppress all output.
 - `--version`, `-v`: Print the version number.
 
 ## 3. Offline Mode
