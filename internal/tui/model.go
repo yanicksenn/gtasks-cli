@@ -77,9 +77,11 @@ func New(offline bool) (*Model, error) {
 	taskLists := list.New([]list.Item{}, itemDelegate{}, 0, 0)
 	taskLists.Title = "Task Lists"
 	taskLists.SetShowHelp(false)
+	taskLists.Styles.NoItems = taskLists.Styles.NoItems.SetString("No task lists found.")
 	tasks := list.New([]list.Item{}, taskItemDelegate{}, 0, 0)
 	tasks.Title = "Tasks"
 	tasks.SetShowHelp(false)
+	tasks.Styles.NoItems = tasks.Styles.NoItems.SetString("This task list is empty.")
 
 	m := &Model{
 		client:         client,
