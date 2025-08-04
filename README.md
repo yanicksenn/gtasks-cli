@@ -123,7 +123,9 @@ Manage your task lists.
 
 #### `gtasks tasklists list`
 Lists all task lists.
-- **Usage:** `gtasks tasklists list`
+- **Usage:** `gtasks tasklists list [flags]`
+- **Flags:**
+  - `--sort-by` (string, optional): Sort task lists by `alphabetical`, `last-modified`, or `uncompleted-tasks`. Defaults to `alphabetical`.
 
 #### `gtasks tasklists get`
 Retrieves the details of a specific task list.
@@ -176,6 +178,7 @@ Lists tasks within a specific task list.
   - `--notes-contains` (string, optional): Filter tasks by notes (case-insensitive).
   - `--due-before` (string, optional): Filter tasks with a due date before a specified date (e.g., "2025-12-31").
   - `--due-after` (string, optional): Filter tasks with a due date after a specified date (e.g., "2025-12-31").
+  - `--sort-by` (string, optional): Sort tasks by `alphabetical`, `last-modified`, or `due-date`. Defaults to `alphabetical`.
 
 #### `gtasks tasks get`
 Retrieves the details of a specific task.
@@ -368,6 +371,7 @@ To start the interactive mode, run the following command:
 -   `enter`: Select a task list to view its tasks.
 -   `n`: Create a new task list.
 -   `d`: Delete the selected task list or task.
+-   `s`: Cycle through the sorting options.
 -   `esc`: Cancel the current action (e.g., creating or deleting a task list).
 
 ## 8. Implementation Details
