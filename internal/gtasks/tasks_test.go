@@ -1,25 +1,16 @@
 package gtasks
 
 import (
-	"fmt"
 	"strings"
 	"testing"
-
-	"google.golang.org/api/tasks/v1"
 )
 
 func TestTasksLifecycle(t *testing.T) {
-	server := newMockServer()
-	defer server.Close()
-
-	client, err := newTestClient(server.URL)
-	if err != nil {
-		t.Fatalf("failed to create test client: %v", err)
-	}
+	client := newTestOfflineClient(t)
 
 	// 1. Create a task list to work with
 	var taskListID string
-	output := CaptureOutput(t, func() {
+	CaptureOutput(t, func() {
 		opts := CreateTaskListOptions{Title: "Shopping List"}
 		list, err := client.CreateTaskList(opts)
 		if err != nil {
@@ -29,7 +20,7 @@ func TestTasksLifecycle(t *testing.T) {
 	})
 
 	// 2. Initial list of tasks should be empty
-	output = CaptureOutput(t, func() {
+	output := CaptureOutput(t, func() {
 		opts := ListTasksOptions{TaskListID: taskListID}
 		tasks, err := client.ListTasks(opts)
 		if err != nil {
@@ -43,7 +34,7 @@ func TestTasksLifecycle(t *testing.T) {
 
 	// 3. Create a task
 	var taskID string
-	output = CaptureOutput(t, func() {
+	CaptureOutput(t, func() {
 		opts := CreateTaskOptions{TaskListID: taskListID, Title: "Buy Milk"}
 		task, err := client.CreateTask(opts)
 		if err != nil {
@@ -79,7 +70,7 @@ func TestTasksLifecycle(t *testing.T) {
 	}
 
 	// 6. Update the task
-	output = CaptureOutput(t, func() {
+	CaptureOutput(t, func() {
 		opts := UpdateTaskOptions{TaskListID: taskListID, TaskID: taskID, Title: "Buy Almond Milk"}
 		_, err := client.UpdateTask(opts)
 		if err != nil {
@@ -88,7 +79,7 @@ func TestTasksLifecycle(t *testing.T) {
 	})
 
 	// 7. Complete the task
-	output = CaptureOutput(t, func() {
+	CaptureOutput(t, func() {
 		opts := CompleteTaskOptions{TaskListID: taskListID, TaskID: taskID}
 		_, err := client.CompleteTask(opts)
 		if err != nil {
@@ -110,7 +101,7 @@ func TestTasksLifecycle(t *testing.T) {
 	}
 
 	// 9. Uncomplete the task
-	output = CaptureOutput(t, func() {
+	CaptureOutput(t, func() {
 		opts := UncompleteTaskOptions{TaskListID: taskListID, TaskID: taskID}
 		_, err := client.UncompleteTask(opts)
 		if err != nil {
@@ -132,7 +123,7 @@ func TestTasksLifecycle(t *testing.T) {
 	}
 
 	// 11. Delete the task
-	output = CaptureOutput(t, func() {
+	CaptureOutput(t, func() {
 		opts := DeleteTaskOptions{TaskListID: taskListID, TaskID: taskID}
 		err := client.DeleteTask(opts)
 		if err != nil {
@@ -155,13 +146,7 @@ func TestTasksLifecycle(t *testing.T) {
 }
 
 func TestTaskPrint(t *testing.T) {
-	server := newMockServer()
-	defer server.Close()
-
-	client, err := newTestClient(server.URL)
-	if err != nil {
-		t.Fatalf("failed to create test client: %v", err)
-	}
+	client := newTestOfflineClient(t)
 
 	// 1. Create a task list to work with
 	var taskListID string
@@ -198,29 +183,4 @@ func TestTaskPrint(t *testing.T) {
 	if !strings.Contains(output, "Buy Milk") {
 		t.Errorf("expected output to contain 'Buy Milk', got '%s'", output)
 	}
-}
-
-func printTasks(tasks *tasks.Tasks) {
-	if len(tasks.Items) == 0 {
-		fmt.Println("No tasks found.")
-		return
-	}
-
-	fmt.Println("Tasks:")
-	for _, item := range tasks.Items {
-		status := " "
-		if item.Status == "completed" {
-			status = "x"
-		}
-		fmt.Printf("[%s] %s (%s)\n", status, item.Title, item.Id)
-	}
-}
-
-func printTask(task *tasks.Task) {
-	fmt.Printf("ID:      %s\n", task.Id)
-	fmt.Printf("Title:   %s\n", task.Title)
-	fmt.Printf("Status:  %s\n", task.Status)
-	fmt.Printf("Notes:   %s\n", task.Notes)
-	fmt.Printf("Due:     %s\n", task.Due)
-	fmt.Printf("Self:    %s\n", task.SelfLink)
 }

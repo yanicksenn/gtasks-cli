@@ -3,16 +3,19 @@ package gtasks
 import (
 	"strings"
 	"testing"
+
+	"github.com/yanicksenn/gtasks/internal/store"
 )
 
-func TestTaskListsLifecycle(t *testing.T) {
-	server := newMockServer()
-	defer server.Close()
-
-	client, err := newTestClient(server.URL)
-	if err != nil {
-		t.Fatalf("failed to create test client: %v", err)
+func newTestOfflineClient(t *testing.T) *offlineClient {
+	t.Helper()
+	return &offlineClient{
+		store: store.NewTestStore(),
 	}
+}
+
+func TestTaskListsLifecycle(t *testing.T) {
+	client := newTestOfflineClient(t)
 
 	// 1. Initial list should contain the default list
 	output := CaptureOutput(t, func() {
@@ -28,14 +31,13 @@ func TestTaskListsLifecycle(t *testing.T) {
 
 	// 2. Create a new task list
 	var listID string
-	output = CaptureOutput(t, func() {
+	CaptureOutput(t, func() {
 		opts := CreateTaskListOptions{Title: "Groceries"}
 		list, err := client.CreateTaskList(opts)
 		if err != nil {
 			t.Fatalf("CreateTaskList failed: %v", err)
 		}
 		listID = list.Id
-		printTaskList(list)
 	})
 
 	// 3. List should now contain the new list
@@ -64,7 +66,7 @@ func TestTaskListsLifecycle(t *testing.T) {
 	}
 
 	// 5. Update the list
-	output = CaptureOutput(t, func() {
+	CaptureOutput(t, func() {
 		opts := UpdateTaskListOptions{TaskListID: listID, Title: "Updated Groceries"}
 		_, err := client.UpdateTaskList(opts)
 		if err != nil {
@@ -73,7 +75,7 @@ func TestTaskListsLifecycle(t *testing.T) {
 	})
 
 	// 6. Delete the list
-	output = CaptureOutput(t, func() {
+	CaptureOutput(t, func() {
 		opts := DeleteTaskListOptions{TaskListID: listID}
 		err := client.DeleteTaskList(opts)
 		if err != nil {
@@ -95,13 +97,7 @@ func TestTaskListsLifecycle(t *testing.T) {
 }
 
 func TestTaskListPrint(t *testing.T) {
-	server := newMockServer()
-	defer server.Close()
-
-	client, err := newTestClient(server.URL)
-	if err != nil {
-		t.Fatalf("failed to create test client: %v", err)
-	}
+	client := newTestOfflineClient(t)
 
 	// 1. Create a new task list
 	var listID string

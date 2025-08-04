@@ -1,23 +1,30 @@
 package gtasks
 
-import "google.golang.org/api/tasks/v1"
+import (
+	"github.com/yanicksenn/gtasks/internal/store"
+	"google.golang.org/api/tasks/v1"
+)
 
 // offlineClient is a client that interacts with the offline store.
 type offlineClient struct {
-	store *offlineStore
+	store *store.InMemoryStore
 }
 
 // newOfflineClient creates a new client that works with the local offline store.
 func newOfflineClient() (*offlineClient, error) {
-	store, err := newOfflineStore()
+	path, err := store.GetOfflineStorePath()
 	if err != nil {
 		return nil, err
 	}
-	return &offlineClient{store: store}, nil
+	s, err := store.NewInMemoryStore(path)
+	if err != nil {
+		return nil, err
+	}
+	return &offlineClient{store: s}, nil
 }
 
 func (c *offlineClient) ListTaskLists() (*tasks.TaskLists, error) {
-	lists, err := c.store.listTaskLists()
+	lists, err := c.store.ListTaskLists()
 	if err != nil {
 		return nil, err
 	}
@@ -28,26 +35,26 @@ func (c *offlineClient) CreateTaskList(opts CreateTaskListOptions) (*tasks.TaskL
 	list := &tasks.TaskList{
 		Title: opts.Title,
 	}
-	return c.store.createTaskList(list)
+	return c.store.CreateTaskList(list)
 }
 
 func (c *offlineClient) GetTaskList(opts GetTaskListOptions) (*tasks.TaskList, error) {
-	return c.store.getTaskList(opts.TaskListID)
+	return c.store.GetTaskList(opts.TaskListID)
 }
 
 func (c *offlineClient) UpdateTaskList(opts UpdateTaskListOptions) (*tasks.TaskList, error) {
 	list := &tasks.TaskList{
 		Title: opts.Title,
 	}
-	return c.store.updateTaskList(opts.TaskListID, list)
+	return c.store.UpdateTaskList(opts.TaskListID, list)
 }
 
 func (c *offlineClient) DeleteTaskList(opts DeleteTaskListOptions) error {
-	return c.store.deleteTaskList(opts.TaskListID)
+	return c.store.DeleteTaskList(opts.TaskListID)
 }
 
 func (c *offlineClient) ListTasks(opts ListTasksOptions) (*tasks.Tasks, error) {
-	taskItems, err := c.store.listTasks(opts.TaskListID)
+	taskItems, err := c.store.ListTasks(opts.TaskListID)
 	if err != nil {
 		return nil, err
 	}
@@ -60,11 +67,11 @@ func (c *offlineClient) CreateTask(opts CreateTaskOptions) (*tasks.Task, error) 
 		Notes: opts.Notes,
 		Due:   opts.Due,
 	}
-	return c.store.createTask(opts.TaskListID, task)
+	return c.store.CreateTask(opts.TaskListID, task)
 }
 
 func (c *offlineClient) GetTask(opts GetTaskOptions) (*tasks.Task, error) {
-	return c.store.getTask(opts.TaskListID, opts.TaskID)
+	return c.store.GetTask(opts.TaskListID, opts.TaskID)
 }
 
 func (c *offlineClient) UpdateTask(opts UpdateTaskOptions) (*tasks.Task, error) {
@@ -73,27 +80,27 @@ func (c *offlineClient) UpdateTask(opts UpdateTaskOptions) (*tasks.Task, error) 
 		Notes: opts.Notes,
 		Due:   opts.Due,
 	}
-	return c.store.updateTask(opts.TaskListID, opts.TaskID, task)
+	return c.store.UpdateTask(opts.TaskListID, opts.TaskID, task)
 }
 
 func (c *offlineClient) CompleteTask(opts CompleteTaskOptions) (*tasks.Task, error) {
-	task, err := c.store.getTask(opts.TaskListID, opts.TaskID)
+	task, err := c.store.GetTask(opts.TaskListID, opts.TaskID)
 	if err != nil {
 		return nil, err
 	}
 	task.Status = "completed"
-	return c.store.updateTask(opts.TaskListID, opts.TaskID, task)
+	return c.store.UpdateTask(opts.TaskListID, opts.TaskID, task)
 }
 
 func (c *offlineClient) UncompleteTask(opts UncompleteTaskOptions) (*tasks.Task, error) {
-	task, err := c.store.getTask(opts.TaskListID, opts.TaskID)
+	task, err := c.store.GetTask(opts.TaskListID, opts.TaskID)
 	if err != nil {
 		return nil, err
 	}
 	task.Status = "needsAction"
-	return c.store.updateTask(opts.TaskListID, opts.TaskID, task)
+	return c.store.UpdateTask(opts.TaskListID, opts.TaskID, task)
 }
 
 func (c *offlineClient) DeleteTask(opts DeleteTaskOptions) error {
-	return c.store.deleteTask(opts.TaskListID, opts.TaskID)
+	return c.store.DeleteTask(opts.TaskListID, opts.TaskID)
 }

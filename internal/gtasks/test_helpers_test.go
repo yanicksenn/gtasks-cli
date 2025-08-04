@@ -54,3 +54,28 @@ func printTaskList(list *tasks.TaskList) {
 	fmt.Printf("Title: %s\n", list.Title)
 	fmt.Printf("Self:  %s\n", list.SelfLink)
 }
+
+func printTasks(tasks *tasks.Tasks) {
+	if len(tasks.Items) == 0 {
+		fmt.Println("No tasks found.")
+		return
+	}
+
+	fmt.Println("Tasks:")
+	for _, item := range tasks.Items {
+		status := " "
+		if item.Status == "completed" {
+			status = "x"
+		}
+		fmt.Printf("[%s] %s (%s)\n", status, item.Title, item.Id)
+	}
+}
+
+func printTask(task *tasks.Task) {
+	fmt.Printf("ID:      %s\n", task.Id)
+	fmt.Printf("Title:   %s\n", task.Title)
+	fmt.Printf("Status:  %s\n", task.Status)
+	fmt.Printf("Notes:   %s\n", task.Notes)
+	fmt.Printf("Due:     %s\n", task.Due)
+	fmt.Printf("Self:    %s\n", task.SelfLink)
+}

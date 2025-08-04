@@ -1,4 +1,4 @@
-package gtasks
+package store
 
 import (
 	"encoding/json"
@@ -14,10 +14,11 @@ const (
 	offlineDataFile = "offline.json"
 )
 
-// offlineStore manages the state of tasks and task lists in a local file.
-type offlineStore struct {
+// InMemoryStore manages the state of tasks and task lists in memory,
+// with an option to persist to a local file.
+type InMemoryStore struct {
 	mu   sync.Mutex
-	path string
+	path string // Path for persistence; if empty, store is transient.
 	Data struct {
 		TaskLists map[string]*tasks.TaskList       `json:"task_lists"`
 		Tasks     map[string]map[string]*tasks.Task `json:"tasks"` // taskListID -> taskID -> task
@@ -25,22 +26,21 @@ type offlineStore struct {
 	} `json:"data"`
 }
 
-// newOfflineStore creates a new offline store, loading data from the file if it exists.
-func newOfflineStore() (*offlineStore, error) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
+// NewInMemoryStore creates a new in-memory store. If a path is provided,
+// it loads data from that file if it exists.
+func NewInMemoryStore(path string) (*InMemoryStore, error) {
+	store := &InMemoryStore{path: path}
+	store.Data.TaskLists = make(map[string]*tasks.TaskList)
+	store.Data.Tasks = make(map[string]map[string]*tasks.Task)
+	store.Data.NextID = 1
+
+	if path == "" {
+		return store, nil // Transient store
 	}
-	path := filepath.Join(home, ".config", "gtasks", offlineDataFile)
 
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		return nil, err
 	}
-
-	store := &offlineStore{path: path}
-	store.Data.TaskLists = make(map[string]*tasks.TaskList)
-	store.Data.Tasks = make(map[string]map[string]*tasks.Task)
-	store.Data.NextID = 1
 
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return store, store.persist() // Create the file if it doesn't exist
@@ -61,7 +61,27 @@ func newOfflineStore() (*offlineStore, error) {
 	return store, nil
 }
 
-func (s *offlineStore) persist() error {
+// NewTestStore creates a new, empty, transient in-memory store for testing.
+func NewTestStore() *InMemoryStore {
+	store, _ := NewInMemoryStore("")
+	// Pre-populate with a default list for testing
+	store.CreateTaskList(&tasks.TaskList{Title: "Default List"})
+	return store
+}
+
+// GetOfflineStorePath returns the default path for the offline data file.
+func GetOfflineStorePath() (string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(home, ".config", "gtasks", offlineDataFile), nil
+}
+
+func (s *InMemoryStore) persist() error {
+	if s.path == "" {
+		return nil // Don't persist for a transient store
+	}
 	data, err := json.MarshalIndent(s.Data, "", "  ")
 	if err != nil {
 		return err
@@ -69,13 +89,13 @@ func (s *offlineStore) persist() error {
 	return os.WriteFile(s.path, data, 0600)
 }
 
-func (s *offlineStore) newID() string {
-	id := fmt.Sprintf("offline-id%d", s.Data.NextID)
+func (s *InMemoryStore) newID() string {
+	id := fmt.Sprintf("id%d", s.Data.NextID)
 	s.Data.NextID++
 	return id
 }
 
-func (s *offlineStore) createTaskList(list *tasks.TaskList) (*tasks.TaskList, error) {
+func (s *InMemoryStore) CreateTaskList(list *tasks.TaskList) (*tasks.TaskList, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -87,7 +107,7 @@ func (s *offlineStore) createTaskList(list *tasks.TaskList) (*tasks.TaskList, er
 	return newList, s.persist()
 }
 
-func (s *offlineStore) listTaskLists() ([]*tasks.TaskList, error) {
+func (s *InMemoryStore) ListTaskLists() ([]*tasks.TaskList, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	var lists []*tasks.TaskList
@@ -97,15 +117,13 @@ func (s *offlineStore) listTaskLists() ([]*tasks.TaskList, error) {
 	return lists, nil
 }
 
-// ... (other methods for tasks and tasklists to be implemented) ...
-
-func (s *offlineStore) getTaskList(id string) (*tasks.TaskList, error) {
+func (s *InMemoryStore) GetTaskList(id string) (*tasks.TaskList, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return s.Data.TaskLists[id], nil
 }
 
-func (s *offlineStore) updateTaskList(id string, list *tasks.TaskList) (*tasks.TaskList, error) {
+func (s *InMemoryStore) UpdateTaskList(id string, list *tasks.TaskList) (*tasks.TaskList, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	existingList := s.Data.TaskLists[id]
@@ -113,7 +131,7 @@ func (s *offlineStore) updateTaskList(id string, list *tasks.TaskList) (*tasks.T
 	return existingList, s.persist()
 }
 
-func (s *offlineStore) deleteTaskList(id string) error {
+func (s *InMemoryStore) DeleteTaskList(id string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	delete(s.Data.TaskLists, id)
@@ -121,7 +139,7 @@ func (s *offlineStore) deleteTaskList(id string) error {
 	return s.persist()
 }
 
-func (s *offlineStore) createTask(listID string, task *tasks.Task) (*tasks.Task, error) {
+func (s *InMemoryStore) CreateTask(listID string, task *tasks.Task) (*tasks.Task, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -140,13 +158,13 @@ func (s *offlineStore) createTask(listID string, task *tasks.Task) (*tasks.Task,
 	return newTask, s.persist()
 }
 
-func (s *offlineStore) getTask(listID, taskID string) (*tasks.Task, error) {
+func (s *InMemoryStore) GetTask(listID, taskID string) (*tasks.Task, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return s.Data.Tasks[listID][taskID], nil
 }
 
-func (s *offlineStore) listTasks(listID string) ([]*tasks.Task, error) {
+func (s *InMemoryStore) ListTasks(listID string) ([]*tasks.Task, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	var tasks []*tasks.Task
@@ -156,7 +174,7 @@ func (s *offlineStore) listTasks(listID string) ([]*tasks.Task, error) {
 	return tasks, nil
 }
 
-func (s *offlineStore) updateTask(listID, taskID string, task *tasks.Task) (*tasks.Task, error) {
+func (s *InMemoryStore) UpdateTask(listID, taskID string, task *tasks.Task) (*tasks.Task, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	existingTask := s.Data.Tasks[listID][taskID]
@@ -175,7 +193,7 @@ func (s *offlineStore) updateTask(listID, taskID string, task *tasks.Task) (*tas
 	return existingTask, s.persist()
 }
 
-func (s *offlineStore) deleteTask(listID, taskID string) error {
+func (s *InMemoryStore) DeleteTask(listID, taskID string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	delete(s.Data.Tasks[listID], taskID)
