@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"fmt"
+
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -9,6 +11,18 @@ var (
 )
 
 func (m *Model) View() string {
+	if m.state == stateTaskView {
+		return lipgloss.JoinVertical(
+			lipgloss.Top,
+			"Task Details",
+			fmt.Sprintf("Title: %s", m.selectedTask.Title()),
+			fmt.Sprintf("Status: %s", m.selectedTask.Status),
+			fmt.Sprintf("Notes: %s", m.selectedTask.Description()),
+			fmt.Sprintf("Due: %s", m.selectedTask.Due),
+			m.status,
+		)
+	}
+
 	if m.state == stateNewTaskList {
 		return lipgloss.JoinVertical(
 			lipgloss.Top,

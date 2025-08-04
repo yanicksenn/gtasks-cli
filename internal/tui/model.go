@@ -43,6 +43,7 @@ const (
 	stateNewTaskList
 	stateDeleteTaskList
 	stateDeleteTask
+	stateTaskView
 )
 
 type Pane int
@@ -60,6 +61,7 @@ type Model struct {
 	state          state
 	newTaskListInput textinput.Model
 	sortBy         []string
+	selectedTask   taskItem
 }
 
 func New(offline bool) (*Model, error) {
@@ -275,6 +277,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return tasksLoadedMsg{tasks: tasks}
 				}
 			} else if m.focused == TasksPane {
+				m.selectedTask = m.lists[TasksPane].SelectedItem().(taskItem)
+				m.state = stateTaskView
+				m.SetStatus("Task View")
+			}
+		case "space":
+			if m.focused == TasksPane {
 				selectedTask := m.lists[TasksPane].SelectedItem().(taskItem)
 				if selectedTask.Status == "completed" {
 					m.SetStatus("Un-completing task...")
@@ -306,6 +314,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 		case "esc":
+			if m.state == stateTaskView {
+				m.state = stateDefault
+				m.SetStatus("Tasks")
+				return m, nil
+			}
 			if m.state == stateDeleteTaskList || m.state == stateDeleteTask {
 				m.state = stateDefault
 				m.SetStatus("Ready")
