@@ -320,6 +320,37 @@ You can use the `--offline` flag with most commands to work with a local copy of
 ./gtasks tasklists list --offline
 ```
 
+### Advanced Examples
+
+#### Filtering Tasks
+
+You can combine filters to narrow down your search.
+
+```sh
+# Find tasks with "report" in the title that are due before the end of 2025
+$ ./gtasks tasks list --title-contains "report" --due-before "2025-12-31"
+
+# Find tasks with "meeting" in the notes
+$ ./gtasks tasks list --notes-contains "meeting"
+```
+
+#### Changing the Output Format
+
+You can change the output format to JSON or YAML, which is useful for scripting.
+
+```sh
+# Get a list of task lists in JSON format
+$ ./gtasks tasklists list --output json
+[
+  {
+    "id": "MTM1NTM2MzQzNzczNDkyNzc1NTQ6MDow",
+    "title": "My tasks",
+    ...
+  }
+]
+```
+
+
 ## 7. Implementation Details
 
 - **Language:** Go
