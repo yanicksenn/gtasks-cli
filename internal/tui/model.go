@@ -78,7 +78,7 @@ func New(offline bool) (*Model, error) {
 	newTaskListInput.Placeholder = "New Task List"
 	newTaskListInput.Focus()
 
-	taskLists := list.New([]list.Item{}, itemDelegate{}, 0, 0)
+	taskLists := list.New([]list.Item{}, itemDelegate{focused: true}, 0, 0)
 	taskLists.Title = "Task Lists"
 	taskLists.SetShowHelp(false)
 	taskLists.Styles.NoItems = taskLists.Styles.NoItems.SetString("")
@@ -258,8 +258,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.state == stateDefault {
 				m.focused = (m.focused + 1) % 2
 				if m.focused == TaskListsPane {
+					m.lists[TaskListsPane].SetDelegate(itemDelegate{focused: true})
 					m.SetStatus("Task Lists")
 				} else {
+					m.lists[TaskListsPane].SetDelegate(itemDelegate{focused: false})
 					m.SetStatus("Tasks")
 				}
 			}

@@ -12,9 +12,12 @@ import (
 var (
 	itemStyle         = lipgloss.NewStyle().PaddingLeft(4)
 	selectedItemStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("170"))
+	unfocusedSelectedItemStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("240"))
 )
 
-type itemDelegate struct{}
+type itemDelegate struct{
+	focused bool
+}
 
 func (d itemDelegate) Height() int                               { return 1 }
 func (d itemDelegate) Spacing() int                              { return 0 }
@@ -29,8 +32,14 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 
 	fn := itemStyle.Render
 	if index == m.Index() {
-		fn = func(s ...string) string {
-			return selectedItemStyle.Render("> " + s[0])
+		if d.focused {
+			fn = func(s ...string) string {
+				return selectedItemStyle.Render("> " + s[0])
+			}
+		} else {
+			fn = func(s ...string) string {
+				return unfocusedSelectedItemStyle.Render("> " + s[0])
+			}
 		}
 	}
 
