@@ -230,7 +230,69 @@ Prints a specific property of a task to standard output.
   - `--tasklist` (string, optional): The ID of the task list. Defaults to `@default`.
   - `--property` (string, required): The property to print (e.g., `id`, `title`, `notes`, `due`, `status`, `selfLink`).
 
-## 6. Implementation Details
+---
+
+## 6. Examples
+
+Here are some common commands to get you started.
+
+### Authenticate with Google
+This is the first command you should run. It will open your web browser to the Google login page to authorize the application.
+```sh
+./gtasks accounts login
+```
+
+### List All Your Task Lists
+```sh
+./gtasks tasklists list
+```
+
+### Create a New Task List
+```sh
+./gtasks tasklists create --title "Groceries"
+```
+
+### List Tasks
+You can list tasks in your default list or a specific list.
+
+```sh
+# List tasks in the default list
+./gtasks tasks list
+
+# List tasks in a specific list by its ID
+./gtasks tasks list --tasklist "MDExoB..."
+```
+
+### Create a New Task
+You can create a simple task or add more details like a due date.
+
+```sh
+# Create a simple task in the default list
+./gtasks tasks create --title "Buy milk"
+
+# Create a task with a due date in a specific list
+./gtasks tasks create --tasklist "MDExoB..." --title "Finish report" --due "2025-12-20T15:00:00.000Z"
+```
+
+### Complete a Task
+To complete a task, you need its ID, which you can get from the `tasks list` command.
+```sh
+./gtasks tasks complete "eG9_b..."
+```
+
+### View Completed Tasks
+Use the `--show-completed` flag to include completed tasks in the list.
+```sh
+./gtasks tasks list --show-completed
+```
+
+### Work Offline
+You can use the `--offline` flag with most commands to work with a local copy of your tasks.
+```sh
+./gtasks tasklists list --offline
+```
+
+## 7. Implementation Details
 
 - **Language:** Go
 - **Libraries:**
@@ -238,16 +300,13 @@ Prints a specific property of a task to standard output.
   - Google API Client for Go (`google.golang.org/api/tasks/v1`).
   - Go OAuth2 Library (`golang.org/x/oauth2`).
 
-## 7. Project Documentation
+## 8. Project Documentation
 
-For more detailed information on the design and implementation, see the following documents:
+For more detailed information on the design and implementation, see the following document:
 
 - [Software Design (`DESIGN.md`)](./DESIGN.md)
-- [Implementation Plan (`IMPLEMENTATION_PLAN.md`)](./IMPLEMENTATION_PLAN.md)
-- [Worklog (`WORKLOG.md`)](./WORKLOG.md)
-- [OAuth Web Flow Plan (`OAUTH_WEB_FLOW_PLAN.md`)](./OAUTH_WEB_FLOW_PLAN.md)
 
-## 8. Running Tests
+## 9. Running Tests
 
 To run the full suite of tests, use the following command from the root of the project:
 
