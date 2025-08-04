@@ -13,9 +13,10 @@ A command-line interface (CLI) for managing your Google Tasks.
   - [TaskList Management](#tasklist-management)
   - [Task Management](#task-management)
 - [6. Examples](#6-examples)
-- [7. Implementation Details](#7-implementation-details)
-- [8. Project Documentation](#8-project-documentation)
-- [9. Running Tests](#9-running-tests)
+- [7. Interactive Mode](#7-interactive-mode)
+- [8. Implementation Details](#8-implementation-details)
+- [9. Project Documentation](#9-project-documentation)
+- [10. Running Tests](#10-running-tests)
 
 ---
 
@@ -350,22 +351,41 @@ $ ./gtasks tasklists list --output json
 ]
 ```
 
+## 7. Interactive Mode
 
-## 7. Implementation Details
+`gtasks` provides a full-screen interactive mode that allows you to manage your tasks and task lists in a more fluid, application-like experience.
+
+To start the interactive mode, run the following command:
+
+```sh
+./gtasks interactive
+```
+
+### Keybindings
+
+-   `q`, `ctrl+c`: Quit the application.
+-   `tab`: Switch between the task lists and tasks panes.
+-   `enter`: Select a task list to view its tasks.
+-   `n`: Create a new task list.
+-   `d`: Delete the selected task list or task.
+-   `esc`: Cancel the current action (e.g., creating or deleting a task list).
+
+## 8. Implementation Details
 
 - **Language:** Go
 - **Libraries:**
   - Cobra (`github.com/spf13/cobra`) for CLI structure.
+  - Bubble Tea (`github.com/charmbracelet/bubbletea`) for the interactive TUI.
   - Google API Client for Go (`google.golang.org/api/tasks/v1`).
   - Go OAuth2 Library (`golang.org/x/oauth2`).
 
-## 8. Project Documentation
+## 9. Project Documentation
 
 For more detailed information on the design and implementation, see the following document:
 
 - [Software Design (`DESIGN.md`)](./DESIGN.md)
 
-## 9. Running Tests
+## 10. Running Tests
 
 To run the full suite of tests, use the following command from the root of the project:
 
