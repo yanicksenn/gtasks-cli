@@ -19,3 +19,20 @@ func (i taskListItem) Title() string {
 func (i taskListItem) Description() string {
 	return i.TaskList.Id
 }
+
+type taskItem struct {
+	*taskspb.Task
+}
+
+func (i taskItem) FilterValue() string {
+	return i.Task.Title
+}
+
+func (i taskItem) Title() string {
+	return i.Task.Title
+}
+
+func (i taskItem) Description() string {
+	return i.Task.Notes
+}
+

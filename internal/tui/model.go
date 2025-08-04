@@ -13,6 +13,10 @@ type taskListsLoadedMsg struct {
 	taskLists *taskspb.TaskLists
 }
 
+type tasksLoadedMsg struct {
+	tasks *taskspb.Tasks
+}
+
 type Pane int
 
 const (
@@ -61,12 +65,30 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.lists[TaskListsPane].SetItems(items)
 
+	case tasksLoadedMsg:
+		items := make([]list.Item, len(msg.tasks.Items))
+		for i, task := range msg.tasks.Items {
+			items[i] = taskItem{task}
+		}
+		m.lists[TasksPane].SetItems(items)
+
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
 		case "tab":
 			m.focused = (m.focused + 1) % 2
+		case "enter":
+			if m.focused == TaskListsPane {
+				selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
+				return m, func() tea.Msg {
+					tasks, err := m.client.ListTasks(gtasks.ListTasksOptions{TaskListID: selectedTaskList.Id})
+					if err != nil {
+						return err
+					}
+					return tasksLoadedMsg{tasks: tasks}
+				}
+			}
 		}
 	}
 
