@@ -29,11 +29,13 @@ var listTasksCmd = &cobra.Command{
 		notesContains, _ := cmd.Flags().GetString("notes-contains")
 		dueBefore, _ := cmd.Flags().GetString("due-before")
 		dueAfter, _ := cmd.Flags().GetString("due-after")
+		sortBy, _ := cmd.Flags().GetString("sort-by")
 
 		listOpts := gtasks.ListTasksOptions{
 			TaskListID:    tasklist,
 			ShowCompleted: showCompleted,
 			ShowHidden:    showHidden,
+			SortBy:        sortBy,
 		}
 
 		tasks, err := h.Client.ListTasks(listOpts)
@@ -240,6 +242,7 @@ func init() {
 	listTasksCmd.Flags().String("notes-contains", "", "Filter tasks by notes (case-insensitive)")
 	listTasksCmd.Flags().String("due-before", "", "Filter tasks with a due date before the specified date (e.g., '2025-12-31')")
 	listTasksCmd.Flags().String("due-after", "", "Filter tasks with a due date after the specified date (e.g., '2025-12-31')")
+	listTasksCmd.Flags().String("sort-by", "alphabetical", "Sort tasks by (alphabetical, last-modified, due-date)")
 
 	getTaskCmd.Flags().String("tasklist", "@default", "The ID of the task list")
 

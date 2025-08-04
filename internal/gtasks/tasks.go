@@ -1,12 +1,18 @@
 package gtasks
 
-import "google.golang.org/api/tasks/v1"
+import (
+	"sort"
+	"time"
+
+	"google.golang.org/api/tasks/v1"
+)
 
 // ListTasksOptions holds the parameters for listing tasks.
 type ListTasksOptions struct {
 	TaskListID    string
 	ShowCompleted bool
 	ShowHidden    bool
+	SortBy        string
 }
 
 // GetTaskOptions holds the parameters for retrieving a single task.
@@ -51,7 +57,38 @@ type DeleteTaskOptions struct {
 }
 
 func (c *onlineClient) ListTasks(opts ListTasksOptions) (*tasks.Tasks, error) {
-	return c.service.Tasks.List(opts.TaskListID).ShowCompleted(opts.ShowCompleted).ShowHidden(opts.ShowHidden).Do()
+	tasks, err := c.service.Tasks.List(opts.TaskListID).ShowCompleted(opts.ShowCompleted).ShowHidden(opts.ShowHidden).Do()
+	if err != nil {
+		return nil, err
+	}
+
+	switch opts.SortBy {
+	case "alphabetical":
+		sort.Slice(tasks.Items, func(i, j int) bool {
+			return tasks.Items[i].Title < tasks.Items[j].Title
+		})
+	case "last-modified":
+		sort.Slice(tasks.Items, func(i, j int) bool {
+			return tasks.Items[i].Updated > tasks.Items[j].Updated
+		})
+	case "due-date":
+		sort.Slice(tasks.Items, func(i, j int) bool {
+			if tasks.Items[i].Due == "" {
+				return false
+			}
+			if tasks.Items[j].Due == "" {
+				return true
+			}
+			dueI, _ := time.Parse(time.RFC3339, tasks.Items[i].Due)
+			dueJ, _ := time.Parse(time.RFC3339, tasks.Items[j].Due)
+			if dueI.Equal(dueJ) {
+				return tasks.Items[i].Title < tasks.Items[j].Title
+			}
+			return dueI.Before(dueJ)
+		})
+	}
+
+	return tasks, nil
 }
 
 func (c *onlineClient) GetTask(opts GetTaskOptions) (*tasks.Task, error) {
