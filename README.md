@@ -12,9 +12,10 @@ A command-line interface (CLI) for managing your Google Tasks.
   - [Account Management](#account-management)
   - [TaskList Management](#tasklist-management)
   - [Task Management](#task-management)
-- [6. Implementation Details](#6-implementation-details)
-- [7. Project Documentation](#7-project-documentation)
-- [8. Running Tests](#8-running-tests)
+- [6. Examples](#6-examples)
+- [7. Implementation Details](#7-implementation-details)
+- [8. Project Documentation](#8-project-documentation)
+- [9. Running Tests](#9-running-tests)
 
 ---
 
@@ -244,12 +245,16 @@ This is the first command you should run. It will open your web browser to the G
 
 ### List All Your Task Lists
 ```sh
-./gtasks tasklists list
+$ ./gtasks tasklists list
+Task Lists:
+- My tasks (MTM1NTM2MzQzNzczNDkyNzc1NTQ6MDow)
+- Old Google Keep reminders (eUZqdFdsOGpsNVdUclY1Mg)
 ```
 
 ### Create a New Task List
 ```sh
-./gtasks tasklists create --title "Groceries"
+$ ./gtasks tasklists create --title "Groceries"
+Successfully created task list: Groceries (OS0ydmR2N3NpSTQ4SzVVMA)
 ```
 
 ### List Tasks
@@ -257,10 +262,16 @@ You can list tasks in your default list or a specific list.
 
 ```sh
 # List tasks in the default list
-./gtasks tasks list
+$ ./gtasks tasks list
+Tasks:
+[ ] buy toilet cleaners (U0QzVTI3TDFiRXg1NnJoSg)
+[ ] buy shampoo (VlFTcEt1TXItMl9RUDZpRg)
+...
 
 # List tasks in a specific list by its ID
-./gtasks tasks list --tasklist "MDExoB..."
+$ ./gtasks tasks list --tasklist "OS0ydmR2N3NpSTQ4SzVVMA"
+Tasks:
+[ ] Buy milk (ZmFyb3FBSzJhUUlRZGJnWg)
 ```
 
 ### Create a New Task
@@ -268,22 +279,27 @@ You can create a simple task or add more details like a due date.
 
 ```sh
 # Create a simple task in the default list
-./gtasks tasks create --title "Buy milk"
+$ ./gtasks tasks create --title "Buy milk"
+Successfully created task: Buy milk (eG9_b...)
 
 # Create a task with a due date in a specific list
-./gtasks tasks create --tasklist "MDExoB..." --title "Finish report" --due "2025-12-20T15:00:00.000Z"
+$ ./gtasks tasks create --tasklist "OS0ydmR2N3NpSTQ4SzVVMA" --title "Finish report" --due "2025-12-20T15:00:00.000Z"
+Successfully created task: Finish report (aG9_c...)
 ```
 
 ### Complete a Task
 To complete a task, you need its ID, which you can get from the `tasks list` command.
 ```sh
-./gtasks tasks complete "eG9_b..."
+$ ./gtasks tasks complete "ZmFyb3FBSzJhUUlRZGJnWg" --tasklist "OS0ydmR2N3NpSTQ4SzVVMA"
+Successfully completed task: Buy milk (ZmFyb3FBSzJhUUlRZGJnWg)
 ```
 
 ### View Completed Tasks
 Use the `--show-completed` flag to include completed tasks in the list.
 ```sh
-./gtasks tasks list --show-completed
+$ ./gtasks tasks list --tasklist "OS0ydmR2N3NpSTQ4SzVVMA" --show-completed
+Tasks:
+[x] Buy milk (ZmFyb3FBSzJhUUlRZGJnWg)
 ```
 
 ### Work Offline
