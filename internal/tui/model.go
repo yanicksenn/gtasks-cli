@@ -18,6 +18,18 @@ type tasksLoadedMsg struct {
 	tasks *taskspb.Tasks
 }
 
+type taskListCreatedMsg struct {
+	taskList *taskspb.TaskList
+}
+
+type errorMsg struct {
+	err error
+}
+
+func (e errorMsg) Error() string {
+	return e.err.Error()
+}
+
 type state int
 
 const (
@@ -69,12 +81,11 @@ func (m *Model) SetStatus(status string) {
 	m.status = status
 }
 
-
 func (m *Model) Init() tea.Cmd {
 	return func() tea.Msg {
 		taskLists, err := m.client.ListTaskLists()
 		if err != nil {
-			return err
+			return errorMsg{err}
 		}
 		return taskListsLoadedMsg{taskLists: taskLists}
 	}
@@ -96,7 +107,36 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.lists[TasksPane].SetItems(items)
 
+	case taskListCreatedMsg:
+		m.newTaskListInput.Reset()
+		m.state = stateDefault
+		m.SetStatus("Task list created")
+		return m, m.Init()
+
+	case errorMsg:
+		m.SetStatus(msg.Error())
+		return m, nil
+
 	case tea.KeyMsg:
+		if m.state == stateNewTaskList {
+			switch keypress := msg.String(); keypress {
+			case "enter":
+				title := m.newTaskListInput.Value()
+				m.state = stateDefault
+				m.SetStatus("Creating task list...")
+				return m, func() tea.Msg {
+					taskList, err := m.client.CreateTaskList(gtasks.CreateTaskListOptions{Title: title})
+					if err != nil {
+						return errorMsg{err}
+					}
+					return taskListCreatedMsg{taskList: taskList}
+				}
+			case "esc":
+				m.state = stateDefault
+				m.SetStatus("Ready")
+			}
+		}
+
 		if m.lists[m.focused].FilterState() == list.Filtering {
 			break
 		}
@@ -119,16 +159,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.SetStatus("New Task List")
 			}
 		case "enter":
-			if m.state == stateNewTaskList {
-				// Create new task list
-				m.state = stateDefault
-				m.SetStatus("Ready")
-			} else if m.focused == TaskListsPane {
+			if m.focused == TaskListsPane {
 				selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
 				return m, func() tea.Msg {
 					tasks, err := m.client.ListTasks(gtasks.ListTasksOptions{TaskListID: selectedTaskList.Id})
 					if err != nil {
-						return err
+						return errorMsg{err}
 					}
 					return tasksLoadedMsg{tasks: tasks}
 				}
