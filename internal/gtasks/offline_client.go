@@ -2,6 +2,7 @@ package gtasks
 
 import (
 	"sort"
+	"strings"
 
 	"github.com/yanicksenn/gtasks/internal/store"
 	"google.golang.org/api/tasks/v1"
@@ -34,7 +35,7 @@ func (c *offlineClient) ListTaskLists(opts ListTaskListsOptions) (*tasks.TaskLis
 	switch opts.SortBy {
 	case "alphabetical":
 		sort.Slice(lists, func(i, j int) bool {
-			return lists[i].Title < lists[j].Title
+			return strings.ToLower(lists[i].Title) < strings.ToLower(lists[j].Title)
 		})
 	case "last-modified":
 		sort.Slice(lists, func(i, j int) bool {
