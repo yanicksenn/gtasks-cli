@@ -230,13 +230,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return tasksLoadedMsg{tasks: tasks}
 				}
 			}
-		case "esc":
-			if m.state == stateNewTaskList || m.state == stateDeleteTaskList {
-				m.state = stateDefault
-				m.SetStatus("Ready")
-			} else if m.focused == TasksPane {
+		case "h", "left":
+			if m.focused == TasksPane {
 				m.focused = TaskListsPane
 				m.SetStatus("Task Lists")
+				return m, nil
+			}
+		case "esc":
+			if m.state == stateDeleteTaskList || m.state == stateDeleteTask {
+				m.state = stateDefault
+				m.SetStatus("Ready")
+				return m, nil
 			}
 		}
 	}
