@@ -213,16 +213,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.SetStatus(msg.Error())
 		return m, nil
 	case tea.KeyMsg:
-		if m.focused == TaskListsPane {
+		if m.state == stateTaskView {
 			switch msg.String() {
-			case "up", "k", "down", "j":
-				m.timer.Reset(300 * time.Millisecond)
-				m.lists[TasksPane].Title = "Loading..."
-				m.lists[TasksPane].SetItems([]list.Item{})
-				timeoutCmd = func() tea.Msg {
-					<-m.timer.C
-					return tasksFetchTimeoutMsg{}
-				}
+			case "esc":
+				m.state = stateDefault
+				m.SetStatus("Tasks")
+				return m, nil
 			}
 		}
 
@@ -243,6 +239,46 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.state = stateDefault
 				m.SetStatus("Ready")
 				return m, nil
+			}
+		}
+
+		if m.state == stateDefault && m.focused == TasksPane {
+			if msg.String() == " " {
+				selectedTask := m.lists[TasksPane].SelectedItem().(taskItem)
+				if selectedTask.Status == "completed" {
+					m.SetStatus("Un-completing task...")
+					selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
+					return m, func() tea.Msg {
+						_, err := m.client.UncompleteTask(gtasks.UncompleteTaskOptions{TaskListID: selectedTaskList.Id, TaskID: selectedTask.Id})
+						if err != nil {
+							return errorMsg{err}
+						}
+						return taskUncompletedMsg{}
+					}
+				} else {
+					m.SetStatus("Completing task...")
+					selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
+					return m, func() tea.Msg {
+						_, err := m.client.CompleteTask(gtasks.CompleteTaskOptions{TaskListID: selectedTaskList.Id, TaskID: selectedTask.Id})
+						if err != nil {
+							return errorMsg{err}
+						}
+						return taskCompletedMsg{}
+					}
+				}
+			}
+		}
+
+		if m.focused == TaskListsPane {
+			switch msg.String() {
+			case "up", "k", "down", "j":
+				m.timer.Reset(300 * time.Millisecond)
+				m.lists[TasksPane].Title = "Loading..."
+				m.lists[TasksPane].SetItems([]list.Item{})
+				timeoutCmd = func() tea.Msg {
+					<-m.timer.C
+					return tasksFetchTimeoutMsg{}
+				}
 			}
 		}
 
@@ -325,31 +361,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.state = stateTaskView
 				m.SetStatus("Task View")
 			}
-		case "space":
-			if m.focused == TasksPane {
-				selectedTask := m.lists[TasksPane].SelectedItem().(taskItem)
-				if selectedTask.Status == "completed" {
-					m.SetStatus("Un-completing task...")
-					selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
-					return m, func() tea.Msg {
-						_, err := m.client.UncompleteTask(gtasks.UncompleteTaskOptions{TaskListID: selectedTaskList.Id, TaskID: selectedTask.Id})
-						if err != nil {
-							return errorMsg{err}
-						}
-						return taskUncompletedMsg{}
-					}
-				} else {
-					m.SetStatus("Completing task...")
-					selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
-					return m, func() tea.Msg {
-						_, err := m.client.CompleteTask(gtasks.CompleteTaskOptions{TaskListID: selectedTaskList.Id, TaskID: selectedTask.Id})
-						if err != nil {
-							return errorMsg{err}
-						}
-						return taskCompletedMsg{}
-					}
-				}
-			}
 		case "h", "left":
 			if m.focused == TasksPane {
 				m.focused = TaskListsPane
@@ -357,11 +368,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 		case "esc":
-			if m.state == stateTaskView {
-				m.state = stateDefault
-				m.SetStatus("Tasks")
-				return m, nil
-			}
 			if m.state == stateDeleteTaskList || m.state == stateDeleteTask {
 				m.state = stateDefault
 				m.SetStatus("Ready")
