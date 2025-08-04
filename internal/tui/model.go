@@ -73,7 +73,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.lists[TasksPane].SetItems(items)
 
 	case tea.KeyMsg:
-		switch msg.String() {
+		if m.lists[m.focused].FilterState() == list.Filtering {
+			break
+		}
+
+		switch keypress := msg.String(); keypress {
 		case "q", "ctrl+c":
 			return m, tea.Quit
 		case "tab":
@@ -92,5 +96,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	return m, nil
+	var cmd tea.Cmd
+	m.lists[m.focused], cmd = m.lists[m.focused].Update(msg)
+	return m, cmd
 }
