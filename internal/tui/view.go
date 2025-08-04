@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	docStyle = lipgloss.NewStyle().Margin(1, 2)
+	docStyle       = lipgloss.NewStyle().Margin(1, 2)
+	emptyListStyle = lipgloss.NewStyle().Margin(4, 2, 1, 2).Foreground(lipgloss.Color("240"))
 )
 
 func (m *Model) View() string {
@@ -47,13 +48,22 @@ func (m *Model) View() string {
 		)
 	}
 
+	tasksView := m.lists[TasksPane].View()
+	if len(m.lists[TasksPane].Items()) == 0 {
+		emptyText := "Empty task list"
+		if m.lists[TasksPane].Title == "Loading..." {
+			emptyText = "Loading..."
+		}
+		tasksView = emptyListStyle.Render(emptyText)
+	}
+
 	return lipgloss.JoinVertical(
 		lipgloss.Top,
 		docStyle.Render(
 			lipgloss.JoinHorizontal(
 				lipgloss.Top,
 				m.lists[TaskListsPane].View(),
-				m.lists[TasksPane].View(),
+				tasksView,
 			),
 		),
 		m.status,
