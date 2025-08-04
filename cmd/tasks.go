@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"io"
 
@@ -20,9 +19,9 @@ var listTasksCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all tasks in a task list",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		client, err := gtasks.NewClient(cmd, context.Background())
+		h, err := NewCommandHelper(cmd)
 		if err != nil {
-			return fmt.Errorf("error creating client: %w", err)
+			return err
 		}
 
 		tasklist, _ := cmd.Flags().GetString("tasklist")
@@ -35,13 +34,12 @@ var listTasksCmd = &cobra.Command{
 			ShowHidden:    showHidden,
 		}
 
-		tasks, err := client.ListTasks(opts)
+		tasks, err := h.Client.ListTasks(opts)
 		if err != nil {
 			return fmt.Errorf("error listing tasks: %w", err)
 		}
 
-		quiet, _ := cmd.Flags().GetBool("quiet")
-		if !quiet {
+		if !h.Quiet {
 			if len(tasks.Items) == 0 {
 				cmd.Println("No tasks found.")
 				return nil
@@ -65,9 +63,9 @@ var getTaskCmd = &cobra.Command{
 	Short: "Get details for a specific task",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		client, err := gtasks.NewClient(cmd, context.Background())
+		h, err := NewCommandHelper(cmd)
 		if err != nil {
-			return fmt.Errorf("error creating client: %w", err)
+			return err
 		}
 
 		tasklist, _ := cmd.Flags().GetString("tasklist")
@@ -76,13 +74,12 @@ var getTaskCmd = &cobra.Command{
 			TaskID:     args[0],
 		}
 
-		task, err := client.GetTask(opts)
+		task, err := h.Client.GetTask(opts)
 		if err != nil {
 			return fmt.Errorf("error getting task: %w", err)
 		}
 
-		quiet, _ := cmd.Flags().GetBool("quiet")
-		if !quiet {
+		if !h.Quiet {
 			cmd.Printf("ID:      %s\n", task.Id)
 			cmd.Printf("Title:   %s\n", task.Title)
 			cmd.Printf("Status:  %s\n", task.Status)
@@ -103,9 +100,9 @@ var createTaskCmd = &cobra.Command{
 }
 
 func CreateTask(cmd *cobra.Command, args []string, out io.Writer) error {
-	client, err := gtasks.NewClient(cmd, context.Background())
+	h, err := NewCommandHelper(cmd)
 	if err != nil {
-		return fmt.Errorf("error creating client: %w", err)
+		return err
 	}
 
 	tasklist, _ := cmd.Flags().GetString("tasklist")
@@ -120,13 +117,12 @@ func CreateTask(cmd *cobra.Command, args []string, out io.Writer) error {
 		Due:        due,
 	}
 
-	createdTask, err := client.CreateTask(opts)
+	createdTask, err := h.Client.CreateTask(opts)
 	if err != nil {
 		return fmt.Errorf("error creating task: %w", err)
 	}
 
-	quiet, _ := cmd.Flags().GetBool("quiet")
-	if !quiet {
+	if !h.Quiet {
 		fmt.Fprintf(out, "Successfully created task: %s (%s)\n", createdTask.Title, createdTask.Id)
 	}
 	return nil
@@ -137,9 +133,9 @@ var updateTaskCmd = &cobra.Command{
 	Short: "Update a task",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		client, err := gtasks.NewClient(cmd, context.Background())
+		h, err := NewCommandHelper(cmd)
 		if err != nil {
-			return fmt.Errorf("error creating client: %w", err)
+			return err
 		}
 
 		tasklist, _ := cmd.Flags().GetString("tasklist")
@@ -155,13 +151,12 @@ var updateTaskCmd = &cobra.Command{
 			Due:        due,
 		}
 
-		updatedTask, err := client.UpdateTask(opts)
+		updatedTask, err := h.Client.UpdateTask(opts)
 		if err != nil {
 			return fmt.Errorf("error updating task: %w", err)
 		}
 
-		quiet, _ := cmd.Flags().GetBool("quiet")
-		if !quiet {
+		if !h.Quiet {
 			fmt.Printf("Successfully updated task: %s (%s)\n", updatedTask.Title, updatedTask.Id)
 		}
 		return nil
@@ -173,9 +168,9 @@ var completeTaskCmd = &cobra.Command{
 	Short: "Mark a task as complete",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		client, err := gtasks.NewClient(cmd, context.Background())
+		h, err := NewCommandHelper(cmd)
 		if err != nil {
-			return fmt.Errorf("error creating client: %w", err)
+			return err
 		}
 
 		tasklist, _ := cmd.Flags().GetString("tasklist")
@@ -184,13 +179,12 @@ var completeTaskCmd = &cobra.Command{
 			TaskID:     args[0],
 		}
 
-		completedTask, err := client.CompleteTask(opts)
+		completedTask, err := h.Client.CompleteTask(opts)
 		if err != nil {
 			return fmt.Errorf("error completing task: %w", err)
 		}
 
-		quiet, _ := cmd.Flags().GetBool("quiet")
-		if !quiet {
+		if !h.Quiet {
 			fmt.Printf("Successfully completed task: %s (%s)\n", completedTask.Title, completedTask.Id)
 		}
 		return nil
@@ -202,9 +196,9 @@ var uncompleteTaskCmd = &cobra.Command{
 	Short: "Mark a task as not complete",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		client, err := gtasks.NewClient(cmd, context.Background())
+		h, err := NewCommandHelper(cmd)
 		if err != nil {
-			return fmt.Errorf("error creating client: %w", err)
+			return err
 		}
 
 		tasklist, _ := cmd.Flags().GetString("tasklist")
@@ -213,13 +207,12 @@ var uncompleteTaskCmd = &cobra.Command{
 			TaskID:     args[0],
 		}
 
-		uncompletedTask, err := client.UncompleteTask(opts)
+		uncompletedTask, err := h.Client.UncompleteTask(opts)
 		if err != nil {
 			return fmt.Errorf("error uncompleting task: %w", err)
 		}
 
-		quiet, _ := cmd.Flags().GetBool("quiet")
-		if !quiet {
+		if !h.Quiet {
 			fmt.Printf("Successfully uncompleted task: %s (%s)\n", uncompletedTask.Title, uncompletedTask.Id)
 		}
 		return nil
@@ -231,9 +224,9 @@ var deleteTaskCmd = &cobra.Command{
 	Short: "Delete a task",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		client, err := gtasks.NewClient(cmd, context.Background())
+		h, err := NewCommandHelper(cmd)
 		if err != nil {
-			return fmt.Errorf("error creating client: %w", err)
+			return err
 		}
 
 		tasklist, _ := cmd.Flags().GetString("tasklist")
@@ -242,12 +235,11 @@ var deleteTaskCmd = &cobra.Command{
 			TaskID:     args[0],
 		}
 
-		if err := client.DeleteTask(opts); err != nil {
+		if err := h.Client.DeleteTask(opts); err != nil {
 			return fmt.Errorf("error deleting task: %w", err)
 		}
 
-		quiet, _ := cmd.Flags().GetBool("quiet")
-		if !quiet {
+		if !h.Quiet {
 			fmt.Printf("Successfully deleted task: %s\n", args[0])
 		}
 		return nil
@@ -261,9 +253,9 @@ var printTaskCmd = &cobra.Command{
 Available properties: id, title, notes, due, status, selfLink`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		client, err := gtasks.NewClient(cmd, context.Background())
+		h, err := NewCommandHelper(cmd)
 		if err != nil {
-			return fmt.Errorf("error creating client: %w", err)
+			return err
 		}
 
 		tasklist, _ := cmd.Flags().GetString("tasklist")
@@ -272,14 +264,13 @@ Available properties: id, title, notes, due, status, selfLink`,
 			TaskID:     args[0],
 		}
 
-		task, err := client.GetTask(opts)
+		task, err := h.Client.GetTask(opts)
 		if err != nil {
 			return fmt.Errorf("error getting task: %w", err)
 		}
 
 		property, _ := cmd.Flags().GetString("property")
-		quiet, _ := cmd.Flags().GetBool("quiet")
-		if err := ui.PrintTaskProperty(task, property, quiet); err != nil {
+		if err := ui.PrintTaskProperty(task, property, h.Quiet); err != nil {
 			return fmt.Errorf("error printing property: %w", err)
 		}
 		return nil
