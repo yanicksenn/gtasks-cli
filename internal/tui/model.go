@@ -76,8 +76,10 @@ func New(offline bool) (*Model, error) {
 
 	taskLists := list.New([]list.Item{}, itemDelegate{}, 0, 0)
 	taskLists.Title = "Task Lists"
+	taskLists.SetShowHelp(false)
 	tasks := list.New([]list.Item{}, taskItemDelegate{}, 0, 0)
 	tasks.Title = "Tasks"
+	tasks.SetShowHelp(false)
 
 	m := &Model{
 		client:         client,
