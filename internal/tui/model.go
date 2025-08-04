@@ -2,6 +2,7 @@ package tui
 
 import (
 	"context"
+	"time"
 
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -9,6 +10,8 @@ import (
 	"github.com/yanicksenn/gtasks/internal/gtasks"
 	taskspb "google.golang.org/api/tasks/v1"
 )
+
+type tasksFetchTimeoutMsg struct{}
 
 type taskListsLoadedMsg struct {
 	taskLists *taskspb.TaskLists
@@ -62,6 +65,7 @@ type Model struct {
 	newTaskListInput textinput.Model
 	sortBy         []string
 	selectedTask   taskItem
+	timer          *time.Timer
 }
 
 func New(offline bool) (*Model, error) {
@@ -90,7 +94,9 @@ func New(offline bool) (*Model, error) {
 		state:          stateDefault,
 		newTaskListInput: newTaskListInput,
 		sortBy:         []string{"alphabetical", "last-modified", "uncompleted-tasks"},
+		timer:          time.NewTimer(0),
 	}
+	m.timer.Stop()
 	m.SetStatus("Ready")
 	return m, nil
 }
@@ -143,6 +149,21 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			items[i] = taskItem{task}
 		}
 		m.lists[TasksPane].SetItems(items)
+		if len(items) == 0 {
+			m.lists[TasksPane].Title = "Empty task list"
+		} else {
+			m.lists[TasksPane].Title = "Tasks"
+		}
+
+	case tasksFetchTimeoutMsg:
+		selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
+		return m, func() tea.Msg {
+			tasks, err := m.client.ListTasks(gtasks.ListTasksOptions{TaskListID: selectedTaskList.Id, ShowCompleted: true, SortBy: m.sortBy[0]})
+			if err != nil {
+				return errorMsg{err}
+			}
+			return tasksLoadedMsg{tasks: tasks}
+		}
 
 	case taskListCreatedMsg:
 		m.newTaskListInput.Reset()
@@ -244,6 +265,15 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		switch keypress := msg.String(); keypress {
+		case "up", "k", "down", "j":
+			if m.focused == TaskListsPane {
+				m.timer.Reset(300 * time.Millisecond)
+				m.lists[TasksPane].Title = "Loading..."
+				m.lists[TasksPane].SetItems([]list.Item{})
+				return m, func() tea.Msg {
+					return tasksFetchTimeoutMsg{}
+				}
+			}
 		case "s":
 			if m.state == stateDefault {
 				m.sort()
