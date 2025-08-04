@@ -217,40 +217,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.SetStatus("Delete Task? (y/n)")
 				}
 			}
-		case "c":
-			if m.state == stateDefault && m.focused == TasksPane {
-				selectedTask := m.lists[TasksPane].SelectedItem().(taskItem)
-				if selectedTask.Status == "completed" {
-					m.SetStatus("Task is already completed")
-					return m, nil
-				}
-				m.SetStatus("Completing task...")
-				selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
-				return m, func() tea.Msg {
-					_, err := m.client.CompleteTask(gtasks.CompleteTaskOptions{TaskListID: selectedTaskList.Id, TaskID: selectedTask.Id})
-					if err != nil {
-						return errorMsg{err}
-					}
-					return taskCompletedMsg{}
-				}
-			}
-		case "u":
-			if m.state == stateDefault && m.focused == TasksPane {
-				selectedTask := m.lists[TasksPane].SelectedItem().(taskItem)
-				if selectedTask.Status != "completed" {
-					m.SetStatus("Task is not completed")
-					return m, nil
-				}
-				m.SetStatus("Un-completing task...")
-				selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
-				return m, func() tea.Msg {
-					_, err := m.client.UncompleteTask(gtasks.UncompleteTaskOptions{TaskListID: selectedTaskList.Id, TaskID: selectedTask.Id})
-					if err != nil {
-						return errorMsg{err}
-					}
-					return taskUncompletedMsg{}
-				}
-			}
 		case "y":
 			if m.state == stateDeleteTaskList {
 				m.state = stateDefault
