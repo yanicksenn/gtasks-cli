@@ -47,7 +47,6 @@ const (
 	stateNewTaskList
 	stateDeleteTaskList
 	stateDeleteTask
-	stateTaskView
 )
 
 type Pane int
@@ -65,10 +64,12 @@ type Model struct {
 	state            state
 	newTaskListInput textinput.Model
 	sortBy           []string
-	selectedTask     taskItem
 	timer            *time.Timer
 	delegate         *itemDelegate
 	keys             keyMap
+	width            int
+	height           int
+	detailsViewHeight int
 }
 
 func New(offline bool) (*Model, error) {
@@ -99,6 +100,7 @@ func New(offline bool) (*Model, error) {
 		timer:            time.NewTimer(0),
 		delegate:         delegate,
 		keys:             keys,
+		detailsViewHeight: 10,
 	}
 	m.timer.Stop()
 	m.SetStatus("Ready")
@@ -137,8 +139,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		h, v := docStyle.GetFrameSize()
-		m.lists[TaskListsPane].SetSize(msg.Width/2-h, msg.Height-v)
-		m.lists[TasksPane].SetSize(msg.Width/2-h, msg.Height-v)
+		m.width = msg.Width
+		m.height = msg.Height
+		listHeight := m.height - m.detailsViewHeight - v - 1
+		m.lists[TaskListsPane].SetSize(m.width/2-h, listHeight)
+		m.lists[TasksPane].SetSize(m.width/2-h, listHeight)
 		return m, nil
 
 	case errorMsg:
@@ -366,19 +371,12 @@ func (m *Model) handleSelect(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			return tasksLoadedMsg{tasks: tasks}
 		}
 	} else if m.focused == TasksPane {
-		m.selectedTask = m.lists[TasksPane].SelectedItem().(taskItem)
-		m.state = stateTaskView
-		m.SetStatus("Task View")
+		// No-op, selection is handled by the list component
 	}
 	return m, nil
 }
 
 func (m *Model) handleBack(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
-	if m.state == stateTaskView {
-		m.state = stateDefault
-		m.SetStatus("Tasks")
-		return m, nil
-	}
 	return m, nil
 }
 
