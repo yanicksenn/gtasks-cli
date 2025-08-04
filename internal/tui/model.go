@@ -288,6 +288,29 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 					return tasksLoadedMsg{tasks: tasks}
 				}
+			} else if m.focused == TasksPane {
+				selectedTask := m.lists[TasksPane].SelectedItem().(taskItem)
+				if selectedTask.Status == "completed" {
+					m.SetStatus("Un-completing task...")
+					selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
+					return m, func() tea.Msg {
+						_, err := m.client.UncompleteTask(gtasks.UncompleteTaskOptions{TaskListID: selectedTaskList.Id, TaskID: selectedTask.Id})
+						if err != nil {
+							return errorMsg{err}
+						}
+						return taskUncompletedMsg{}
+					}
+				} else {
+					m.SetStatus("Completing task...")
+					selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
+					return m, func() tea.Msg {
+						_, err := m.client.CompleteTask(gtasks.CompleteTaskOptions{TaskListID: selectedTaskList.Id, TaskID: selectedTask.Id})
+						if err != nil {
+							return errorMsg{err}
+						}
+						return taskCompletedMsg{}
+					}
+				}
 			}
 		case "h", "left":
 			if m.focused == TasksPane {
