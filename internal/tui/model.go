@@ -215,6 +215,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "enter":
 			if m.focused == TaskListsPane {
+				m.focused = TasksPane
+				m.SetStatus("Tasks")
 				selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
 				return m, func() tea.Msg {
 					tasks, err := m.client.ListTasks(gtasks.ListTasksOptions{TaskListID: selectedTaskList.Id})
@@ -228,6 +230,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.state == stateNewTaskList || m.state == stateDeleteTaskList {
 				m.state = stateDefault
 				m.SetStatus("Ready")
+			} else if m.focused == TasksPane {
+				m.focused = TaskListsPane
+				m.SetStatus("Task Lists")
 			}
 		}
 	}
