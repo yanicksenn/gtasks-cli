@@ -12,14 +12,21 @@ var (
 
 func (m *Model) View() string {
 	if m.state == stateTaskView {
-		return lipgloss.JoinVertical(
-			lipgloss.Top,
-			"Task Details",
-			fmt.Sprintf("Title: %s", m.selectedTask.Title()),
-			fmt.Sprintf("Status: %s", m.selectedTask.Status),
-			fmt.Sprintf("Notes: %s", m.selectedTask.Description()),
-			fmt.Sprintf("Due: %s", m.selectedTask.Due),
-			m.status,
+		return lipgloss.Place(
+			100, 100,
+			lipgloss.Center, lipgloss.Center,
+			lipgloss.NewStyle().
+				Border(lipgloss.NormalBorder(), true).
+				Padding(1, 2).
+				Render(
+					lipgloss.JoinVertical(
+						lipgloss.Left,
+						fmt.Sprintf("Title: %s", m.selectedTask.Title()),
+						fmt.Sprintf("Status: %s", m.selectedTask.Status),
+						fmt.Sprintf("Notes: %s", m.selectedTask.Description()),
+						fmt.Sprintf("Due: %s", m.selectedTask.Due),
+					),
+				),
 		)
 	}
 
