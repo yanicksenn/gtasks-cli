@@ -97,6 +97,11 @@ func (m *Model) Init() tea.Cmd {
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		h, v := docStyle.GetFrameSize()
+		m.lists[TaskListsPane].SetSize(msg.Width/2-h, msg.Height-v)
+		m.lists[TasksPane].SetSize(msg.Width/2-h, msg.Height-v)
+
 	case taskListsLoadedMsg:
 		items := make([]list.Item, len(msg.taskLists.Items))
 		for i, taskList := range msg.taskLists.Items {
