@@ -249,7 +249,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.SetStatus("Tasks")
 				selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
 				return m, func() tea.Msg {
-					tasks, err := m.client.ListTasks(gtasks.ListTasksOptions{TaskListID: selectedTaskList.Id})
+					tasks, err := m.client.ListTasks(gtasks.ListTasksOptions{TaskListID: selectedTaskList.Id, ShowCompleted: true})
 					if err != nil {
 						return errorMsg{err}
 					}
