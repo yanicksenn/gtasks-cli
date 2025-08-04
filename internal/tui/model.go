@@ -22,6 +22,8 @@ type taskListCreatedMsg struct {
 	taskList *taskspb.TaskList
 }
 
+type taskDeletedMsg struct{}
+
 type errorMsg struct {
 	err error
 }
@@ -36,6 +38,7 @@ const (
 	stateDefault state = iota
 	stateNewTaskList
 	stateDeleteTaskList
+	stateDeleteTask
 )
 
 type Pane int
@@ -114,6 +117,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.SetStatus("Task list created")
 		return m, m.Init()
 
+	case taskDeletedMsg:
+		m.SetStatus("Task deleted")
+		selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
+		return m, func() tea.Msg {
+			tasks, err := m.client.ListTasks(gtasks.ListTasksOptions{TaskListID: selectedTaskList.Id})
+			if err != nil {
+				return errorMsg{err}
+			}
+			return tasksLoadedMsg{tasks: tasks}
+		}
+
 	case errorMsg:
 		m.SetStatus(msg.Error())
 		return m, nil
@@ -160,9 +174,14 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.SetStatus("New Task List")
 			}
 		case "d":
-			if m.state == stateDefault && m.focused == TaskListsPane {
-				m.state = stateDeleteTaskList
-				m.SetStatus("Delete Task List? (y/n)")
+			if m.state == stateDefault {
+				if m.focused == TaskListsPane {
+					m.state = stateDeleteTaskList
+					m.SetStatus("Delete Task List? (y/n)")
+				} else {
+					m.state = stateDeleteTask
+					m.SetStatus("Delete Task? (y/n)")
+				}
 			}
 		case "y":
 			if m.state == stateDeleteTaskList {
@@ -175,6 +194,18 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return errorMsg{err}
 					}
 					return m.Init()
+				}
+			} else if m.state == stateDeleteTask {
+				m.state = stateDefault
+				m.SetStatus("Deleting task...")
+				selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
+				selectedTask := m.lists[TasksPane].SelectedItem().(taskItem)
+				return m, func() tea.Msg {
+					err := m.client.DeleteTask(gtasks.DeleteTaskOptions{TaskListID: selectedTaskList.Id, TaskID: selectedTask.Id})
+					if err != nil {
+						return errorMsg{err}
+					}
+					return taskDeletedMsg{}
 				}
 			}
 		case "enter":
