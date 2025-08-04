@@ -10,10 +10,10 @@ This directory contains the end-to-end (E2E) tests for the `gtasks` CLI.
 
 ## Running the Tests
 
-To run the E2E tests, navigate to this directory and run:
+To run the E2E tests, navigate to the root of the project and run:
 
 ```
-go test -v
+go test ./...
 ```
 
-**Note:** The E2E tests require a valid `credentials.json` file in `~/.config/` and will perform a real OAuth2 flow, requiring user interaction.
+**Note:** The E2E tests will perform a real OAuth2 flow, but the credentials are hardcoded and the login/logout process is handled automatically by the test suite.
