@@ -349,7 +349,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.focused == TasksPane {
 				m.focused = TaskListsPane
 				m.SetStatus("Task Lists")
-				m.lists[TasksPane].SetItems([]list.Item{})
 				return m, nil
 			}
 		case "esc":
