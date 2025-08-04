@@ -9,11 +9,15 @@ var (
 )
 
 func (m *Model) View() string {
-	return docStyle.Render(
-		lipgloss.JoinHorizontal(
-			lipgloss.Top,
-			m.lists[TaskListsPane].View(),
-			m.lists[TasksPane].View(),
+	return lipgloss.JoinVertical(
+		lipgloss.Top,
+		docStyle.Render(
+			lipgloss.JoinHorizontal(
+				lipgloss.Top,
+				m.lists[TaskListsPane].View(),
+				m.lists[TasksPane].View(),
+			),
 		),
+		m.status,
 	)
 }

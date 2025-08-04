@@ -28,6 +28,7 @@ type Model struct {
 	client  gtasks.Client
 	focused Pane
 	lists   []list.Model
+	status  string
 }
 
 func New() (*Model, error) {
@@ -36,15 +37,22 @@ func New() (*Model, error) {
 		return nil, err
 	}
 
-	return &Model{
+	m := &Model{
 		client:  client,
 		focused: TaskListsPane,
 		lists: []list.Model{
 			list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0),
 			list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0),
 		},
-	}, nil
+	}
+	m.SetStatus("Ready")
+	return m, nil
 }
+
+func (m *Model) SetStatus(status string) {
+	m.status = status
+}
+
 
 func (m *Model) Init() tea.Cmd {
 	return func() tea.Msg {
@@ -82,6 +90,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "tab":
 			m.focused = (m.focused + 1) % 2
+			if m.focused == TaskListsPane {
+				m.SetStatus("Task Lists")
+			} else {
+				m.SetStatus("Tasks")
+			}
 		case "enter":
 			if m.focused == TaskListsPane {
 				selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
