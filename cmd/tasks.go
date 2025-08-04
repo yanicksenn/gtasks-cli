@@ -25,17 +25,34 @@ var listTasksCmd = &cobra.Command{
 		tasklist, _ := cmd.Flags().GetString("tasklist")
 		showCompleted, _ := cmd.Flags().GetBool("show-completed")
 		showHidden, _ := cmd.Flags().GetBool("show-hidden")
+		titleContains, _ := cmd.Flags().GetString("title-contains")
+		notesContains, _ := cmd.Flags().GetString("notes-contains")
+		dueBefore, _ := cmd.Flags().GetString("due-before")
+		dueAfter, _ := cmd.Flags().GetString("due-after")
 
-		opts := gtasks.ListTasksOptions{
+		listOpts := gtasks.ListTasksOptions{
 			TaskListID:    tasklist,
 			ShowCompleted: showCompleted,
 			ShowHidden:    showHidden,
 		}
 
-		tasks, err := h.Client.ListTasks(opts)
+		tasks, err := h.Client.ListTasks(listOpts)
 		if err != nil {
 			return fmt.Errorf("error listing tasks: %w", err)
 		}
+
+		filterOpts := gtasks.FilterOptions{
+			TitleContains: titleContains,
+			NotesContains: notesContains,
+			DueBefore:     dueBefore,
+			DueAfter:      dueAfter,
+		}
+
+		filteredTasks, err := gtasks.FilterTasks(tasks.Items, filterOpts)
+		if err != nil {
+			return fmt.Errorf("error filtering tasks: %w", err)
+		}
+		tasks.Items = filteredTasks
 
 		return h.Printer.PrintTasks(tasks)
 	},
