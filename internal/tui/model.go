@@ -130,6 +130,8 @@ func (m *Model) Init() tea.Cmd {
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var timeoutCmd tea.Cmd
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		h, v := docStyle.GetFrameSize()
@@ -208,36 +210,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.SetStatus(msg.Error())
 		return m, nil
 	case tea.KeyMsg:
-		if msg.String() == " " {
-			if m.focused == TasksPane {
-				selectedTask := m.lists[TasksPane].SelectedItem().(taskItem)
-				if selectedTask.Status == "completed" {
-					m.SetStatus("Un-completing task...")
-					selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
-					return m, func() tea.Msg {
-						_, err := m.client.UncompleteTask(gtasks.UncompleteTaskOptions{TaskListID: selectedTaskList.Id, TaskID: selectedTask.Id})
-						if err != nil {
-							return errorMsg{err}
-						}
-						return taskUncompletedMsg{}
-					}
-				} else {
-					m.SetStatus("Completing task...")
-					selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
-					return m, func() tea.Msg {
-						_, err := m.client.CompleteTask(gtasks.CompleteTaskOptions{TaskListID: selectedTaskList.Id, TaskID: selectedTask.Id})
-						if err != nil {
-							return errorMsg{err}
-						}
-						return taskCompletedMsg{}
-					}
+		if m.focused == TaskListsPane {
+			switch msg.String() {
+			case "up", "k", "down", "j":
+				m.timer.Reset(300 * time.Millisecond)
+				m.lists[TasksPane].Title = "Loading..."
+				m.lists[TasksPane].SetItems([]list.Item{})
+				timeoutCmd = func() tea.Msg {
+					<-m.timer.C
+					return tasksFetchTimeoutMsg{}
 				}
 			}
-		}
-
-		switch keypress := msg.String(); keypress {
-		case "q", "ctrl+c":
-			return m, tea.Quit
 		}
 
 		if m.state == stateNewTaskList {
@@ -265,15 +248,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		switch keypress := msg.String(); keypress {
-		case "up", "k", "down", "j":
-			if m.focused == TaskListsPane {
-				m.timer.Reset(300 * time.Millisecond)
-				m.lists[TasksPane].Title = "Loading..."
-				m.lists[TasksPane].SetItems([]list.Item{})
-				return m, func() tea.Msg {
-					return tasksFetchTimeoutMsg{}
-				}
-			}
+		case "q", "ctrl+c":
+			return m, tea.Quit
 		case "s":
 			if m.state == stateDefault {
 				m.sort()
@@ -344,6 +320,31 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.state = stateTaskView
 				m.SetStatus("Task View")
 			}
+		case "space":
+			if m.focused == TasksPane {
+				selectedTask := m.lists[TasksPane].SelectedItem().(taskItem)
+				if selectedTask.Status == "completed" {
+					m.SetStatus("Un-completing task...")
+					selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
+					return m, func() tea.Msg {
+						_, err := m.client.UncompleteTask(gtasks.UncompleteTaskOptions{TaskListID: selectedTaskList.Id, TaskID: selectedTask.Id})
+						if err != nil {
+							return errorMsg{err}
+						}
+						return taskUncompletedMsg{}
+					}
+				} else {
+					m.SetStatus("Completing task...")
+					selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
+					return m, func() tea.Msg {
+						_, err := m.client.CompleteTask(gtasks.CompleteTaskOptions{TaskListID: selectedTaskList.Id, TaskID: selectedTask.Id})
+						if err != nil {
+							return errorMsg{err}
+						}
+						return taskCompletedMsg{}
+					}
+				}
+			}
 		case "h", "left":
 			if m.focused == TasksPane {
 				m.focused = TaskListsPane
@@ -371,5 +372,5 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	} else {
 		m.lists[m.focused], cmd = m.lists[m.focused].Update(msg)
 	}
-	return m, cmd
+	return m, tea.Batch(cmd, timeoutCmd)
 }
