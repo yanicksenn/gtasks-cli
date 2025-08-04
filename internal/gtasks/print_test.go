@@ -26,7 +26,7 @@ func TestPrintTaskListProperty(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.property, func(t *testing.T) {
 			output := CaptureOutput(t, func() {
-				err := PrintTaskListProperty(list, tc.property)
+				err := PrintTaskListProperty(list, tc.property, false)
 				if err != nil {
 					t.Fatalf("unexpected error: %v", err)
 				}
@@ -61,7 +61,7 @@ func TestPrintTaskProperty(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.property, func(t *testing.T) {
 			output := CaptureOutput(t, func() {
-				err := PrintTaskProperty(task, tc.property)
+				err := PrintTaskProperty(task, tc.property, false)
 				if err != nil {
 					t.Fatalf("unexpected error: %v", err)
 				}
@@ -75,7 +75,7 @@ func TestPrintTaskProperty(t *testing.T) {
 
 func TestPrintUnknownProperty(t *testing.T) {
 	list := &tasks.TaskList{}
-	err := PrintTaskListProperty(list, "unknown")
+	err := PrintTaskListProperty(list, "unknown", false)
 	if err == nil {
 		t.Error("expected an error, got nil")
 	}
@@ -84,7 +84,7 @@ func TestPrintUnknownProperty(t *testing.T) {
 	}
 
 	task := &tasks.Task{}
-	err = PrintTaskProperty(task, "unknown")
+	err = PrintTaskProperty(task, "unknown", false)
 	if err == nil {
 		t.Error("expected an error, got nil")
 	}

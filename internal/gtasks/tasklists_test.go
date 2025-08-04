@@ -120,7 +120,7 @@ func TestTaskListPrint(t *testing.T) {
 		if err != nil {
 			t.Fatalf("GetTaskList failed: %v", err)
 		}
-		if err := PrintTaskListProperty(list, "title"); err != nil {
+		if err := PrintTaskListProperty(list, "title", false); err != nil {
 			t.Fatalf("PrintTaskListProperty failed: %v", err)
 		}
 	})

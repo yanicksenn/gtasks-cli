@@ -191,7 +191,7 @@ func TestTaskPrint(t *testing.T) {
 		if err != nil {
 			t.Fatalf("GetTask failed: %v", err)
 		}
-		if err := PrintTaskProperty(task, "title"); err != nil {
+		if err := PrintTaskProperty(task, "title", false); err != nil {
 			t.Fatalf("PrintTaskProperty failed: %v", err)
 		}
 	})

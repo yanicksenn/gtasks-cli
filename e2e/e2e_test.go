@@ -49,3 +49,16 @@ func TestVersion(t *testing.T) {
 		t.Errorf("expected version text to contain '0.1.0', got '%s'", output)
 	}
 }
+
+func TestQuietFlag(t *testing.T) {
+	t.Skip("skipping quiet flag e2e tests until authentication is handled in tests")
+	cmd := exec.Command("./" + cliName, "tasklists", "list", "--quiet")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("failed to run command with --quiet flag: %v\nOutput: %s", err, output)
+	}
+
+	if string(output) != "" {
+		t.Errorf("expected empty output, got '%s'", output)
+	}
+}
