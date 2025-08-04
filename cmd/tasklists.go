@@ -22,7 +22,12 @@ var listTasklistsCmd = &cobra.Command{
 			return err
 		}
 
-		lists, err := h.Client.ListTaskLists()
+		sortBy, _ := cmd.Flags().GetString("sort-by")
+		opts := gtasks.ListTaskListsOptions{
+			SortBy: sortBy,
+		}
+
+		lists, err := h.Client.ListTaskLists(opts)
 		if err != nil {
 			return fmt.Errorf("error listing task lists: %w", err)
 		}
@@ -132,6 +137,8 @@ func init() {
 	tasklistsCmd.AddCommand(createTasklistCmd)
 	tasklistsCmd.AddCommand(updateTasklistCmd)
 	tasklistsCmd.AddCommand(deleteTasklistCmd)
+
+	listTasklistsCmd.Flags().String("sort-by", "alphabetical", "Sort task lists by (alphabetical, last-modified, uncompleted-tasks)")
 
 	createTasklistCmd.Flags().String("title", "", "The title of the new task list")
 	createTasklistCmd.MarkFlagRequired("title")

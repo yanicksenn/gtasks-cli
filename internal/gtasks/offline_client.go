@@ -1,6 +1,8 @@
 package gtasks
 
 import (
+	"sort"
+
 	"github.com/yanicksenn/gtasks/internal/store"
 	"google.golang.org/api/tasks/v1"
 )
@@ -23,11 +25,25 @@ func newOfflineClient() (*offlineClient, error) {
 	return &offlineClient{store: s}, nil
 }
 
-func (c *offlineClient) ListTaskLists() (*tasks.TaskLists, error) {
+func (c *offlineClient) ListTaskLists(opts ListTaskListsOptions) (*tasks.TaskLists, error) {
 	lists, err := c.store.ListTaskLists()
 	if err != nil {
 		return nil, err
 	}
+
+	switch opts.SortBy {
+	case "alphabetical":
+		sort.Slice(lists, func(i, j int) bool {
+			return lists[i].Title < lists[j].Title
+		})
+	case "last-modified":
+		sort.Slice(lists, func(i, j int) bool {
+			return lists[i].Updated > lists[j].Updated
+		})
+	case "uncompleted-tasks":
+		// This is a placeholder. The actual implementation will require fetching tasks for each list.
+	}
+
 	return &tasks.TaskLists{Items: lists}, nil
 }
 

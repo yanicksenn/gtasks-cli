@@ -91,7 +91,7 @@ func (m *Model) SetStatus(status string) {
 
 func (m *Model) Init() tea.Cmd {
 	return func() tea.Msg {
-		taskLists, err := m.client.ListTaskLists()
+		taskLists, err := m.client.ListTaskLists(gtasks.ListTaskListsOptions{SortBy: "alphabetical"})
 		if err != nil {
 			return errorMsg{err}
 		}

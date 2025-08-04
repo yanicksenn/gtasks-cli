@@ -1,12 +1,20 @@
 package gtasks
 
-import "google.golang.org/api/tasks/v1"
+import (
+	"sort"
+
+	"google.golang.org/api/tasks/v1"
+)
+
+// ListTaskListsOptions holds the parameters for listing task lists.
+type ListTaskListsOptions struct {
+	SortBy string
+}
 
 // GetTaskListOptions holds the parameters for retrieving a task list.
 type GetTaskListOptions struct {
 	TaskListID string
 }
-
 // CreateTaskListOptions holds the parameters for creating a new task list.
 type CreateTaskListOptions struct {
 	Title string
@@ -23,8 +31,26 @@ type DeleteTaskListOptions struct {
 	TaskListID string
 }
 
-func (c *onlineClient) ListTaskLists() (*tasks.TaskLists, error) {
-	return c.service.Tasklists.List().Do()
+func (c *onlineClient) ListTaskLists(opts ListTaskListsOptions) (*tasks.TaskLists, error) {
+	lists, err := c.service.Tasklists.List().Do()
+	if err != nil {
+		return nil, err
+	}
+
+	switch opts.SortBy {
+	case "alphabetical":
+		sort.Slice(lists.Items, func(i, j int) bool {
+			return lists.Items[i].Title < lists.Items[j].Title
+		})
+	case "last-modified":
+		sort.Slice(lists.Items, func(i, j int) bool {
+			return lists.Items[i].Updated > lists.Items[j].Updated
+		})
+	case "uncompleted-tasks":
+		// This is a placeholder. The actual implementation will require fetching tasks for each list.
+	}
+
+	return lists, nil
 }
 
 func (c *onlineClient) GetTaskList(opts GetTaskListOptions) (*tasks.TaskList, error) {

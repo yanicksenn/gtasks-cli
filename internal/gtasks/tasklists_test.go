@@ -20,7 +20,7 @@ func TestTaskListsLifecycle(t *testing.T) {
 
 	// 1. Initial list should contain the default list
 	output := CaptureOutput(t, func() {
-		lists, err := client.ListTaskLists()
+		lists, err := client.ListTaskLists(ListTaskListsOptions{})
 		if err != nil {
 			t.Fatalf("ListTaskLists failed: %v", err)
 		}
@@ -43,7 +43,7 @@ func TestTaskListsLifecycle(t *testing.T) {
 
 	// 3. List should now contain the new list
 	output = CaptureOutput(t, func() {
-		lists, err := client.ListTaskLists()
+		lists, err := client.ListTaskLists(ListTaskListsOptions{})
 		if err != nil {
 			t.Fatalf("ListTaskLists failed: %v", err)
 		}
@@ -86,7 +86,7 @@ func TestTaskListsLifecycle(t *testing.T) {
 
 	// 7. Final list should not contain the deleted list
 	output = CaptureOutput(t, func() {
-		lists, err := client.ListTaskLists()
+		lists, err := client.ListTaskLists(ListTaskListsOptions{})
 		if err != nil {
 			t.Fatalf("ListTaskLists failed: %v", err)
 		}

@@ -16,7 +16,7 @@ import (
 // Client is the interface for interacting with the tasks service, abstracting
 // away the online and offline implementations.
 type Client interface {
-	ListTaskLists() (*tasks.TaskLists, error)
+	ListTaskLists(opts ListTaskListsOptions) (*tasks.TaskLists, error)
 	CreateTaskList(opts CreateTaskListOptions) (*tasks.TaskList, error)
 	GetTaskList(opts GetTaskListOptions) (*tasks.TaskList, error)
 	UpdateTaskList(opts UpdateTaskListOptions) (*tasks.TaskList, error)
