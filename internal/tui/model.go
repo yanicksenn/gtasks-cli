@@ -217,7 +217,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return taskDeletedMsg{}
 				}
 			}
-		case "enter":
+		case "enter", "l", "right":
 			if m.focused == TaskListsPane {
 				m.focused = TasksPane
 				m.SetStatus("Tasks")
@@ -234,6 +234,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.focused == TasksPane {
 				m.focused = TaskListsPane
 				m.SetStatus("Task Lists")
+				m.lists[TasksPane].SetItems([]list.Item{})
 				return m, nil
 			}
 		case "esc":
