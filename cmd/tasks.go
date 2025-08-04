@@ -2,11 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/spf13/cobra"
 	"github.com/yanicksenn/gtasks/internal/gtasks"
-	"github.com/yanicksenn/gtasks/internal/ui"
 )
 
 var tasksCmd = &cobra.Command{
@@ -39,22 +37,7 @@ var listTasksCmd = &cobra.Command{
 			return fmt.Errorf("error listing tasks: %w", err)
 		}
 
-		if !h.Quiet {
-			if len(tasks.Items) == 0 {
-				cmd.Println("No tasks found.")
-				return nil
-			}
-
-			cmd.Println("Tasks:")
-			for _, item := range tasks.Items {
-				status := " "
-				if item.Status == "completed" {
-					status = "x"
-				}
-				cmd.Printf("[%s] %s (%s)\n", status, item.Title, item.Id)
-			}
-		}
-		return nil
+		return h.Printer.PrintTasks(tasks)
 	},
 }
 
@@ -79,15 +62,7 @@ var getTaskCmd = &cobra.Command{
 			return fmt.Errorf("error getting task: %w", err)
 		}
 
-		if !h.Quiet {
-			cmd.Printf("ID:      %s\n", task.Id)
-			cmd.Printf("Title:   %s\n", task.Title)
-			cmd.Printf("Status:  %s\n", task.Status)
-			cmd.Printf("Notes:   %s\n", task.Notes)
-			cmd.Printf("Due:     %s\n", task.Due)
-			cmd.Printf("Self:    %s\n", task.SelfLink)
-		}
-		return nil
+		return h.Printer.PrintTask(task)
 	},
 }
 
@@ -95,38 +70,33 @@ var createTaskCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a new task",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return CreateTask(cmd, args, cmd.OutOrStdout())
+		h, err := NewCommandHelper(cmd)
+		if err != nil {
+			return err
+		}
+
+		tasklist, _ := cmd.Flags().GetString("tasklist")
+		title, _ := cmd.Flags().GetString("title")
+		notes, _ := cmd.Flags().GetString("notes")
+		due, _ := cmd.Flags().GetString("due")
+
+		opts := gtasks.CreateTaskOptions{
+			TaskListID: tasklist,
+			Title:      title,
+			Notes:      notes,
+			Due:        due,
+		}
+
+		createdTask, err := h.Client.CreateTask(opts)
+		if err != nil {
+			return fmt.Errorf("error creating task: %w", err)
+		}
+
+		return h.Printer.PrintTask(createdTask)
 	},
 }
 
-func CreateTask(cmd *cobra.Command, args []string, out io.Writer) error {
-	h, err := NewCommandHelper(cmd)
-	if err != nil {
-		return err
-	}
 
-	tasklist, _ := cmd.Flags().GetString("tasklist")
-	title, _ := cmd.Flags().GetString("title")
-	notes, _ := cmd.Flags().GetString("notes")
-	due, _ := cmd.Flags().GetString("due")
-
-	opts := gtasks.CreateTaskOptions{
-		TaskListID: tasklist,
-		Title:      title,
-		Notes:      notes,
-		Due:        due,
-	}
-
-	createdTask, err := h.Client.CreateTask(opts)
-	if err != nil {
-		return fmt.Errorf("error creating task: %w", err)
-	}
-
-	if !h.Quiet {
-		fmt.Fprintf(out, "Successfully created task: %s (%s)\n", createdTask.Title, createdTask.Id)
-	}
-	return nil
-}
 
 var updateTaskCmd = &cobra.Command{
 	Use:   "update [ID]",
@@ -156,10 +126,7 @@ var updateTaskCmd = &cobra.Command{
 			return fmt.Errorf("error updating task: %w", err)
 		}
 
-		if !h.Quiet {
-			fmt.Printf("Successfully updated task: %s (%s)\n", updatedTask.Title, updatedTask.Id)
-		}
-		return nil
+		return h.Printer.PrintSuccess(fmt.Sprintf("Successfully updated task: %s (%s)", updatedTask.Title, updatedTask.Id))
 	},
 }
 
@@ -184,10 +151,7 @@ var completeTaskCmd = &cobra.Command{
 			return fmt.Errorf("error completing task: %w", err)
 		}
 
-		if !h.Quiet {
-			fmt.Printf("Successfully completed task: %s (%s)\n", completedTask.Title, completedTask.Id)
-		}
-		return nil
+		return h.Printer.PrintSuccess(fmt.Sprintf("Successfully completed task: %s (%s)", completedTask.Title, completedTask.Id))
 	},
 }
 
@@ -212,10 +176,7 @@ var uncompleteTaskCmd = &cobra.Command{
 			return fmt.Errorf("error uncompleting task: %w", err)
 		}
 
-		if !h.Quiet {
-			fmt.Printf("Successfully uncompleted task: %s (%s)\n", uncompletedTask.Title, uncompletedTask.Id)
-		}
-		return nil
+		return h.Printer.PrintSuccess(fmt.Sprintf("Successfully uncompleted task: %s (%s)", uncompletedTask.Title, uncompletedTask.Id))
 	},
 }
 
@@ -239,43 +200,11 @@ var deleteTaskCmd = &cobra.Command{
 			return fmt.Errorf("error deleting task: %w", err)
 		}
 
-		if !h.Quiet {
-			fmt.Printf("Successfully deleted task: %s\n", args[0])
-		}
-		return nil
+		return h.Printer.PrintDelete("task", args[0])
 	},
 }
 
-var printTaskCmd = &cobra.Command{
-	Use:   "print [ID]",
-	Short: "Print a property of a task",
-	Long: `Print a property of a task.
-Available properties: id, title, notes, due, status, selfLink`,
-	Args: cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		h, err := NewCommandHelper(cmd)
-		if err != nil {
-			return err
-		}
 
-		tasklist, _ := cmd.Flags().GetString("tasklist")
-		opts := gtasks.GetTaskOptions{
-			TaskListID: tasklist,
-			TaskID:     args[0],
-		}
-
-		task, err := h.Client.GetTask(opts)
-		if err != nil {
-			return fmt.Errorf("error getting task: %w", err)
-		}
-
-		property, _ := cmd.Flags().GetString("property")
-		if err := ui.PrintTaskProperty(task, property, h.Quiet); err != nil {
-			return fmt.Errorf("error printing property: %w", err)
-		}
-		return nil
-	},
-}
 
 func init() {
 	RootCmd.AddCommand(tasksCmd)
@@ -286,7 +215,6 @@ func init() {
 	tasksCmd.AddCommand(completeTaskCmd)
 	tasksCmd.AddCommand(uncompleteTaskCmd)
 	tasksCmd.AddCommand(deleteTaskCmd)
-	tasksCmd.AddCommand(printTaskCmd)
 
 	listTasksCmd.Flags().String("tasklist", "@default", "The ID of the task list")
 	listTasksCmd.Flags().Bool("show-completed", false, "Include completed tasks in the output")
@@ -310,8 +238,4 @@ func init() {
 	uncompleteTaskCmd.Flags().String("tasklist", "@default", "The ID of the task list")
 
 	deleteTaskCmd.Flags().String("tasklist", "@default", "The ID of the task list")
-
-	printTaskCmd.Flags().String("tasklist", "@default", "The ID of the task list")
-	printTaskCmd.Flags().String("property", "", "The property to print")
-	printTaskCmd.MarkFlagRequired("property")
 }

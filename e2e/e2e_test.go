@@ -2,9 +2,9 @@ package e2e
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"os"
-	"regexp"
 	"strings"
 	"testing"
 
@@ -26,28 +26,9 @@ func login() error {
 	return err
 }
 
-var tasklistIDs []string
-
-func cleanup() {
-	for _, id := range tasklistIDs {
-		_, err := execute("tasklists", "delete", id)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "e2e cleanup: failed to delete tasklist %s: %v\n", id, err)
-		}
-	}
-}
-
 func TestMain(m *testing.M) {
-	// Setup: login
-	if err := login(); err != nil {
-		fmt.Fprintf(os.Stderr, "e2e setup: failed to login: %v\n", err)
-		os.Exit(1)
-	}
 
 	exitVal := m.Run()
-
-	// Teardown: cleanup created data
-	cleanup()
 
 	os.Exit(exitVal)
 }
@@ -72,19 +53,25 @@ func TestHelp(t *testing.T) {
 func TestTasklists(t *testing.T) {
 	// Create a new task list
 	listTitle := "E2E Test List"
-	output, err := execute("tasklists", "create", "--title", listTitle)
+	output, err := execute("tasklists", "create", "--title", listTitle, "--output", "json")
 	if err != nil {
 		t.Fatalf("failed to create task list: %v\nOutput: %s", err, output)
 	}
 
-	// Extract the ID from the output
-	re := regexp.MustCompile(`Successfully created task list: .* \((.*)\)`) 
-	matches := re.FindStringSubmatch(output)
-	if len(matches) < 2 {
-		t.Fatalf("could not find task list ID in output: %s", output)
+	// Extract the ID from the JSON output
+	var createdList struct {
+		Id string `json:"id"`
 	}
-	listID := matches[1]
-	tasklistIDs = append(tasklistIDs, listID)
+	if err := json.Unmarshal([]byte(output), &createdList); err != nil {
+		t.Fatalf("failed to unmarshal json: %v\nOutput: %s", err, output)
+	}
+	listID := createdList.Id
+	t.Cleanup(func() {
+		_, err := execute("tasklists", "delete", listID)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "e2e cleanup: failed to delete tasklist %s: %v\n", listID, err)
+		}
+	})
 
 	// List task lists and verify the new one is there
 	output, err = execute("tasklists", "list")
@@ -108,30 +95,37 @@ func TestTasklists(t *testing.T) {
 func TestTasks(t *testing.T) {
 	// Create a new task list for this test
 	listTitle := "E2E Tasks Test List"
-	output, err := execute("tasklists", "create", "--title", listTitle)
+	output, err := execute("tasklists", "create", "--title", listTitle, "--output", "json")
 	if err != nil {
 		t.Fatalf("failed to create task list for tasks test: %v\nOutput: %s", err, output)
 	}
-	re := regexp.MustCompile(`Successfully created task list: .* \((.*)\)`) 
-	matches := re.FindStringSubmatch(output)
-	if len(matches) < 2 {
-		t.Fatalf("could not find task list ID in output: %s", output)
+	var createdList struct {
+		Id string `json:"id"`
 	}
-	listID := matches[1]
-	tasklistIDs = append(tasklistIDs, listID)
+	if err := json.Unmarshal([]byte(output), &createdList); err != nil {
+		t.Fatalf("failed to unmarshal json: %v\nOutput: %s", err, output)
+	}
+	listID := createdList.Id
+	t.Cleanup(func() {
+		_, err := execute("tasklists", "delete", listID)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "e2e cleanup: failed to delete tasklist %s: %v\n", listID, err)
+		}
+	})
 
 	// Create a new task
 	taskTitle := "E2E Test Task"
-	output, err = execute("tasks", "create", "--tasklist", listID, "--title", taskTitle)
+	output, err = execute("tasks", "create", "--tasklist", listID, "--title", taskTitle, "--output", "json")
 	if err != nil {
 		t.Fatalf("failed to create task: %v\nOutput: %s", err, output)
 	}
-	re = regexp.MustCompile(`Successfully created task: .* \((.*)\)`) 
-	matches = re.FindStringSubmatch(output)
-	if len(matches) < 2 {
-		t.Fatalf("could not find task ID in output: %s", output)
+	var createdTask struct {
+		Id string `json:"id"`
 	}
-	taskID := matches[1]
+	if err := json.Unmarshal([]byte(output), &createdTask); err != nil {
+		t.Fatalf("failed to unmarshal json: %v\nOutput: %s", err, output)
+	}
+	taskID := createdTask.Id
 
 	// List tasks and verify the new one is there
 	output, err = execute("tasks", "list", "--tasklist", listID)
@@ -164,12 +158,72 @@ func TestVersion(t *testing.T) {
 }
 
 func TestQuietFlag(t *testing.T) {
-	output, err := execute("tasklists", "list", "--quiet")
+	output, err := execute("tasklists", "list", "--quiet", "--output", "table")
 	if err != nil {
 		t.Fatalf("failed to run command with --quiet flag: %v\nOutput: %s", err, output)
 	}
 
 	if strings.TrimSpace(output) != "" {
 		t.Errorf("expected empty output, got '%s'", output)
+	}
+}
+
+func TestCreateTasklistWithJsonOutput(t *testing.T) {
+	listTitle := "E2E Create JSON Test"
+	output, err := execute("tasklists", "create", "--title", listTitle, "--output", "json")
+	if err != nil {
+		t.Fatalf("failed to create task list with json output: %v\nOutput: %s", err, output)
+	}
+
+	var createdList struct {
+		Id    string `json:"id"`
+		Title string `json:"title"`
+	}
+	if err := json.Unmarshal([]byte(output), &createdList); err != nil {
+		t.Fatalf("failed to unmarshal json: %v\nOutput: %s", err, output)
+	}
+
+	if createdList.Title != listTitle {
+		t.Errorf("expected title to be %q, got %q", listTitle, createdList.Title)
+	}
+
+	t.Cleanup(func() {
+		_, err := execute("tasklists", "delete", createdList.Id)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "e2e cleanup: failed to delete tasklist %s: %v\n", createdList.Id, err)
+		}
+	})
+}
+
+func TestOutputFlag(t *testing.T) {
+	// Create a new task list
+	listTitle := "E2E Output Test List"
+	output, err := execute("tasklists", "create", "--title", listTitle, "--output", "json")
+	if err != nil {
+		t.Fatalf("failed to create task list: %v\nOutput: %s", err, output)
+	}
+
+	// Extract the ID from the JSON output
+	var createdList struct {
+		Id string `json:"id"`
+	}
+	if err := json.Unmarshal([]byte(output), &createdList); err != nil {
+		t.Fatalf("failed to unmarshal json: %v\nOutput: %s", err, output)
+	}
+	listID := createdList.Id
+	t.Cleanup(func() {
+		_, err := execute("tasklists", "delete", listID)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "e2e cleanup: failed to delete tasklist %s: %v\n", listID, err)
+		}
+	})
+
+	// Test JSON output
+	output, err = execute("tasklists", "get", listID, "--output", "json")
+	if err != nil {
+		t.Fatalf("failed to get task list with json output: %v\nOutput: %s", err, output)
+	}
+	if !strings.Contains(output, `"id":"`+listID+`"`) {
+		t.Errorf(`expected json output to contain '"id":"%s"', got '%s'`, listID, output)
 	}
 }
