@@ -3,6 +3,8 @@ package gtasks
 import (
 	"strings"
 	"testing"
+
+	"github.com/yanicksenn/gtasks/internal/ui"
 )
 
 func TestTasksLifecycle(t *testing.T) {
@@ -176,7 +178,7 @@ func TestTaskPrint(t *testing.T) {
 		if err != nil {
 			t.Fatalf("GetTask failed: %v", err)
 		}
-		if err := PrintTaskProperty(task, "title", false); err != nil {
+		if err := ui.PrintTaskProperty(task, "title", false); err != nil {
 			t.Fatalf("PrintTaskProperty failed: %v", err)
 		}
 	})

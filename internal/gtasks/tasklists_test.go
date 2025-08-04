@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/yanicksenn/gtasks/internal/store"
+	"github.com/yanicksenn/gtasks/internal/ui"
 )
 
 func newTestOfflineClient(t *testing.T) *offlineClient {
@@ -116,7 +117,7 @@ func TestTaskListPrint(t *testing.T) {
 		if err != nil {
 			t.Fatalf("GetTaskList failed: %v", err)
 		}
-		if err := PrintTaskListProperty(list, "title", false); err != nil {
+		if err := ui.PrintTaskListProperty(list, "title", false); err != nil {
 			t.Fatalf("PrintTaskListProperty failed: %v", err)
 		}
 	})

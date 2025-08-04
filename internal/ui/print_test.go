@@ -1,4 +1,4 @@
-package gtasks
+package ui
 
 import (
 	"strings"

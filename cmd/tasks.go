@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/yanicksenn/gtasks/internal/gtasks"
+	"github.com/yanicksenn/gtasks/internal/ui"
 )
 
 var tasksCmd = &cobra.Command{
@@ -278,7 +279,7 @@ Available properties: id, title, notes, due, status, selfLink`,
 
 		property, _ := cmd.Flags().GetString("property")
 		quiet, _ := cmd.Flags().GetBool("quiet")
-		if err := gtasks.PrintTaskProperty(task, property, quiet); err != nil {
+		if err := ui.PrintTaskProperty(task, property, quiet); err != nil {
 			return fmt.Errorf("error printing property: %w", err)
 		}
 		return nil
