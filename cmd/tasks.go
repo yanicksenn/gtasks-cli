@@ -219,6 +219,10 @@ func init() {
 	listTasksCmd.Flags().String("tasklist", "@default", "The ID of the task list")
 	listTasksCmd.Flags().Bool("show-completed", false, "Include completed tasks in the output")
 	listTasksCmd.Flags().Bool("show-hidden", false, "Include hidden tasks in the output")
+	listTasksCmd.Flags().String("title-contains", "", "Filter tasks by title (case-insensitive)")
+	listTasksCmd.Flags().String("notes-contains", "", "Filter tasks by notes (case-insensitive)")
+	listTasksCmd.Flags().String("due-before", "", "Filter tasks with a due date before the specified date (e.g., '2025-12-31')")
+	listTasksCmd.Flags().String("due-after", "", "Filter tasks with a due date after the specified date (e.g., '2025-12-31')")
 
 	getTaskCmd.Flags().String("tasklist", "@default", "The ID of the task list")
 
