@@ -75,7 +75,9 @@ func New(offline bool) (*Model, error) {
 	newTaskListInput.Focus()
 
 	taskLists := list.New([]list.Item{}, itemDelegate{}, 0, 0)
+	taskLists.Title = "Task Lists"
 	tasks := list.New([]list.Item{}, taskItemDelegate{}, 0, 0)
+	tasks.Title = "Tasks"
 
 	m := &Model{
 		client:         client,
