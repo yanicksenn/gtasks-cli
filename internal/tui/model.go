@@ -62,8 +62,8 @@ type Model struct {
 	sortBy         []string
 }
 
-func New() (*Model, error) {
-	client, err := gtasks.NewClient(context.Background(), false)
+func New(offline bool) (*Model, error) {
+	client, err := gtasks.NewClient(context.Background(), offline)
 	if err != nil {
 		return nil, err
 	}

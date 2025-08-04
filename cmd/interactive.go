@@ -14,7 +14,8 @@ var interactiveCmd = &cobra.Command{
 	Use:   "interactive",
 	Short: "Start the interactive TUI",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		m, err := tui.New()
+		offline, _ := cmd.Flags().GetBool("offline")
+		m, err := tui.New(offline)
 		if err != nil {
 			return fmt.Errorf("error creating new model: %w", err)
 		}
