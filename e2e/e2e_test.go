@@ -146,6 +146,52 @@ func TestTasks(t *testing.T) {
 	}
 }
 
+func TestTasksFilter(t *testing.T) {
+	// Create a new task list for this test
+	listTitle := "E2E Tasks Filter Test List"
+	output, err := execute("tasklists", "create", "--title", listTitle, "--output", "json")
+	if err != nil {
+		t.Fatalf("failed to create task list for tasks test: %v\nOutput: %s", err, output)
+	}
+	var createdList struct {
+		Id string `json:"id"`
+	}
+	if err := json.Unmarshal([]byte(output), &createdList); err != nil {
+		t.Fatalf("failed to unmarshal json: %v\nOutput: %s", err, output)
+	}
+	listID := createdList.Id
+	t.Cleanup(func() {
+		_, err := execute("tasklists", "delete", listID)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "e2e cleanup: failed to delete tasklist %s: %v\n", listID, err)
+		}
+	})
+
+	// Create tasks
+	taskTitle1 := "E2E Test Task - Buy Apples"
+	taskTitle2 := "E2E Test Task - Buy Bananas"
+	_, err = execute("tasks", "create", "--tasklist", listID, "--title", taskTitle1)
+	if err != nil {
+		t.Fatalf("failed to create task 1: %v", err)
+	}
+	_, err = execute("tasks", "create", "--tasklist", listID, "--title", taskTitle2)
+	if err != nil {
+		t.Fatalf("failed to create task 2: %v", err)
+	}
+
+	// List tasks with filter and verify
+	output, err = execute("tasks", "list", "--tasklist", listID, "--title-contains", "Apples")
+	if err != nil {
+		t.Fatalf("failed to list tasks with filter: %v\nOutput: %s", err, output)
+	}
+	if !strings.Contains(output, taskTitle1) {
+		t.Errorf("expected task '%s' to be in the filtered list", taskTitle1)
+	}
+	if strings.Contains(output, taskTitle2) {
+		t.Errorf("expected task '%s' to NOT be in the filtered list", taskTitle2)
+	}
+}
+
 func TestVersion(t *testing.T) {
 	output, err := execute("--version")
 	if err != nil {
