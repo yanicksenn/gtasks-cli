@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/yanicksenn/gtasks/internal/gtasks"
 	taskspb "google.golang.org/api/tasks/v1"
@@ -17,6 +18,13 @@ type tasksLoadedMsg struct {
 	tasks *taskspb.Tasks
 }
 
+type state int
+
+const (
+	stateDefault state = iota
+	stateNewTaskList
+)
+
 type Pane int
 
 const (
@@ -25,10 +33,12 @@ const (
 )
 
 type Model struct {
-	client  gtasks.Client
-	focused Pane
-	lists   []list.Model
-	status  string
+	client         gtasks.Client
+	focused        Pane
+	lists          []list.Model
+	status         string
+	state          state
+	newTaskListInput textinput.Model
 }
 
 func New() (*Model, error) {
@@ -37,13 +47,19 @@ func New() (*Model, error) {
 		return nil, err
 	}
 
+	newTaskListInput := textinput.New()
+	newTaskListInput.Placeholder = "New Task List"
+	newTaskListInput.Focus()
+
 	m := &Model{
-		client:  client,
-		focused: TaskListsPane,
+		client:         client,
+		focused:        TaskListsPane,
 		lists: []list.Model{
 			list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0),
 			list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0),
 		},
+		state:          stateDefault,
+		newTaskListInput: newTaskListInput,
 	}
 	m.SetStatus("Ready")
 	return m, nil
@@ -89,14 +105,25 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "ctrl+c":
 			return m, tea.Quit
 		case "tab":
-			m.focused = (m.focused + 1) % 2
-			if m.focused == TaskListsPane {
-				m.SetStatus("Task Lists")
-			} else {
-				m.SetStatus("Tasks")
+			if m.state == stateDefault {
+				m.focused = (m.focused + 1) % 2
+				if m.focused == TaskListsPane {
+					m.SetStatus("Task Lists")
+				} else {
+					m.SetStatus("Tasks")
+				}
+			}
+		case "n":
+			if m.state == stateDefault && m.focused == TaskListsPane {
+				m.state = stateNewTaskList
+				m.SetStatus("New Task List")
 			}
 		case "enter":
-			if m.focused == TaskListsPane {
+			if m.state == stateNewTaskList {
+				// Create new task list
+				m.state = stateDefault
+				m.SetStatus("Ready")
+			} else if m.focused == TaskListsPane {
 				selectedTaskList := m.lists[TaskListsPane].SelectedItem().(taskListItem)
 				return m, func() tea.Msg {
 					tasks, err := m.client.ListTasks(gtasks.ListTasksOptions{TaskListID: selectedTaskList.Id})
@@ -106,10 +133,19 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return tasksLoadedMsg{tasks: tasks}
 				}
 			}
+		case "esc":
+			if m.state == stateNewTaskList {
+				m.state = stateDefault
+				m.SetStatus("Ready")
+			}
 		}
 	}
 
 	var cmd tea.Cmd
-	m.lists[m.focused], cmd = m.lists[m.focused].Update(msg)
+	if m.state == stateNewTaskList {
+		m.newTaskListInput, cmd = m.newTaskListInput.Update(msg)
+	} else {
+		m.lists[m.focused], cmd = m.lists[m.focused].Update(msg)
+	}
 	return m, cmd
 }

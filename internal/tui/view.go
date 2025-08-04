@@ -9,6 +9,15 @@ var (
 )
 
 func (m *Model) View() string {
+	if m.state == stateNewTaskList {
+		return lipgloss.JoinVertical(
+			lipgloss.Top,
+			"Create a new task list",
+			m.newTaskListInput.View(),
+			m.status,
+		)
+	}
+
 	return lipgloss.JoinVertical(
 		lipgloss.Top,
 		docStyle.Render(
