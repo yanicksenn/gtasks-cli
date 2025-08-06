@@ -7,7 +7,6 @@ import (
 )
 
 var (
-	docStyle       = lipgloss.NewStyle().Margin(1, 2)
 	emptyListStyle = lipgloss.NewStyle().Margin(4, 2, 1, 2).Foreground(lipgloss.Color("240"))
 )
 
@@ -44,11 +43,15 @@ func (m *Model) View() string {
 		tasksView,
 	)
 
-	h, _ := docStyle.GetFrameSize()
+	mainContainer := lipgloss.NewStyle().
+		Width(m.width).
+		Height(m.height-m.detailsViewHeight-1).
+		Render(mainView)
+
 	detailsViewStyle := lipgloss.NewStyle().
 		Border(lipgloss.NormalBorder(), true).
 		Padding(1, 2).
-		Width(m.width - h).
+		Width(m.width - 4).
 		Height(m.detailsViewHeight)
 
 	detailsView := ""
@@ -80,7 +83,7 @@ func (m *Model) View() string {
 
 	return lipgloss.JoinVertical(
 		lipgloss.Top,
-		docStyle.Render(mainView),
+		mainContainer,
 		detailsView,
 		m.status,
 	)

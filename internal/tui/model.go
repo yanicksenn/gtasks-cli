@@ -100,7 +100,7 @@ func New(offline bool) (*Model, error) {
 		timer:            time.NewTimer(0),
 		delegate:         delegate,
 		keys:             keys,
-		detailsViewHeight: 10,
+		detailsViewHeight: 7,
 	}
 	m.timer.Stop()
 	m.SetStatus("Ready")
@@ -138,12 +138,11 @@ func (m *Model) Init() tea.Cmd {
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		h, v := docStyle.GetFrameSize()
 		m.width = msg.Width
 		m.height = msg.Height
-		listHeight := m.height - m.detailsViewHeight - v - 1
-		m.lists[TaskListsPane].SetSize(m.width/2-h, listHeight)
-		m.lists[TasksPane].SetSize(m.width/2-h, listHeight)
+		listHeight := m.height - m.detailsViewHeight - 2 - 1
+		m.lists[TaskListsPane].SetSize(m.width/2-2, listHeight)
+		m.lists[TasksPane].SetSize(m.width/2-2, listHeight)
 		return m, nil
 
 	case errorMsg:
