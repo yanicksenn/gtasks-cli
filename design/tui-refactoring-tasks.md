@@ -1,0 +1,24 @@
+# TUI Refactoring Tasks
+
+- [x] **Task 1: Modify `cmd/interactive.go` to accept a task list flag.**
+    - Remove the existing TUI implementation that prompts the user to select a task list.
+    - Add a `--tasklist` flag to the `interactiveCmd` to allow the user to specify a task list.
+    - If the `--tasklist` flag is not provided, display an error message and exit.
+- [x] **Task 2: Create a new TUI model.**
+    - Create a new `internal/tui/model.go` file.
+    - Define the new TUI model, which will include:
+        - A list of tasks.
+        - The index of the currently selected task.
+        - A `tea.Model` implementation.
+- [x] **Task 3: Implement the `Init`, `Update`, and `View` methods for the new TUI model.**
+    - `Init`: Fetch the tasks for the specified task list.
+    - `Update`: Handle user input for navigating the task list and toggling task completion.
+    - `View`: Render the task list, including the completion status of each task.
+- [x] **Task 4: Remove the old TUI implementation.**
+    - Delete the following files:
+        - `internal/tui/delegate.go`
+        - `internal/tui/item.go`
+        - `internal/tui/keys.go`
+        - `internal/tui/view.go`
+- [x] **Task 5: Update the E2E tests.**
+- [x] **Task 6: Update documentation.**

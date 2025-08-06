@@ -356,23 +356,20 @@ $ ./gtasks tasklists list --output json
 
 ## 7. Interactive Mode
 
-`gtasks` provides a full-screen interactive mode that allows you to manage your tasks and task lists in a more fluid, application-like experience.
+`gtasks` provides a full-screen interactive mode that allows you to manage your tasks in a more fluid, application-like experience.
 
 To start the interactive mode, run the following command:
 
 ```sh
-./gtasks interactive
+./gtasks interactive --tasklist <tasklist_id>
 ```
 
 ### Keybindings
 
 -   `q`, `ctrl+c`: Quit the application.
--   `tab`: Switch between the task lists and tasks panes.
--   `enter`: Select a task list to view its tasks.
--   `n`: Create a new task list.
--   `d`: Delete the selected task list or task.
--   `s`: Cycle through the sorting options.
--   `esc`: Cancel the current action (e.g., creating or deleting a task list).
+-   `up`, `k`: Move the cursor up.
+-   `down`, `j`: Move the cursor down.
+-   `space`: Toggle the completion status of the selected task.
 
 ## 8. Implementation Details
 
