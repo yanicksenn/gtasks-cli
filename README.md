@@ -15,42 +15,8 @@ A command-line interface (CLI) for managing your Google Tasks.
 - [6. Examples](#6-examples)
 - [7. Interactive Mode](#7-interactive-mode)
 - [8. Implementation Details](#8-implementation-details)
-- [9. Running Tests](#9-running-tests)
+- [9. Building and Running](#9-building-and-running)
 - [10. Homebrew Release](#10-homebrew-release)
-
----
-
-## Building and Running
-
-### Prerequisites
-
-*   Go 1.20 or later
-
-### Building
-
-To build the `gtasks` binary, run the following command from the root of the project:
-
-```sh
-go build -o gtasks .
-```
-
-This will place the executable file named `gtasks` in the project root.
-
-### Running
-
-To run the application, first, you need to authenticate with your Google account:
-
-```sh
-./gtasks accounts login
-```
-
-This will open a browser window for you to complete the authentication process.
-
-Once authenticated, you can use the other commands, for example:
-
-```sh
-./gtasks tasklists list
-```
 
 ---
 
@@ -363,7 +329,39 @@ To start the interactive mode, run the following command:
   - Google API Client for Go (`google.golang.org/api/tasks/v1`).
   - Go OAuth2 Library (`golang.org/x/oauth2`).
 
-## 9. Running Tests
+## 9. Building and Running
+
+### Prerequisites
+
+*   Go 1.20 or later
+
+### Building
+
+To build the `gtasks` binary, run the following command from the root of the project:
+
+```sh
+go build -o gtasks .
+```
+
+This will place the executable file named `gtasks` in the project root.
+
+### Running
+
+To run the application, first, you need to authenticate with your Google account:
+
+```sh
+./gtasks accounts login
+```
+
+This will open a browser window for you to complete the authentication process.
+
+Once authenticated, you can use the other commands, for example:
+
+```sh
+./gtasks tasklists list
+```
+
+### Running Tests
 
 To run the full suite of tests, use the following command from the root of the project:
 
