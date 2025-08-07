@@ -98,13 +98,13 @@ The CLI follows a `gtasks <resource> <action> [flags]` pattern.
 
 Manage your authenticated Google accounts.
 
-#### `gtasks login`
+#### `gtasks accounts login`
 Initiates the Google SSO flow to authenticate a new user. The new account becomes the active one.
-- **Usage:** `gtasks login`
+- **Usage:** `gtasks accounts login`
 
-#### `gtasks logout`
+#### `gtasks accounts logout`
 Removes the cached credentials for the currently active user.
-- **Usage:** `gtasks logout`
+- **Usage:** `gtasks accounts logout`
 
 #### `gtasks accounts list`
 Lists all authenticated Google accounts.
@@ -154,15 +154,7 @@ Permanently deletes a task list and all of its tasks.
 - **Arguments:**
   - `<tasklist_id>` (required): The ID of the task list to delete.
 
-#### `gtasks tasklists print`
-Prints a specific property of a task list to standard output.
-- **Usage:** `gtasks tasklists print <tasklist_id> --property <property_name>`
-- **Arguments:**
-  - `<tasklist_id>` (required): The ID of the task list.
-- **Flags:**
-  - `--property` (string, required): The property to print (e.g., `id`, `title`, `selfLink`).
 
----
 
 ### Task Management
 
@@ -233,16 +225,7 @@ Permanently deletes a task.
 - **Flags:**
   - `--tasklist` (string, optional): The ID of the task list. Defaults to `@default`.
 
-#### `gtasks tasks print`
-Prints a specific property of a task to standard output.
-- **Usage:** `gtasks tasks print <task_id> --property <property_name> [--tasklist <tasklist_id>]`
-- **Arguments:**
-  - `<task_id>` (required): The ID of the task.
-- **Flags:**
-  - `--tasklist` (string, optional): The ID of the task list. Defaults to `@default`.
-  - `--property` (string, required): The property to print (e.g., `id`, `title`, `notes`, `due`, `status`, `selfLink`).
 
----
 
 ## 6. Examples
 
@@ -383,9 +366,9 @@ To start the interactive mode, run the following command:
 
 ## 9. Project Documentation
 
-For more detailed information on the design and implementation, see the following document:
+For more detailed information on the design and implementation, see the documents in the following directory:
 
-- [Software Design (`DESIGN.md`)](./DESIGN.md)
+- [Software Design (`/design`)](./design)
 
 ## 10. Running Tests
 
