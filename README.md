@@ -15,9 +15,8 @@ A command-line interface (CLI) for managing your Google Tasks.
 - [6. Examples](#6-examples)
 - [7. Interactive Mode](#7-interactive-mode)
 - [8. Implementation Details](#8-implementation-details)
-- [9. Project Documentation](#9-project-documentation)
-- [10. Running Tests](#10-running-tests)
-- [11. Homebrew Release](#11-homebrew-release)
+- [9. Running Tests](#9-running-tests)
+- [10. Homebrew Release](#10-homebrew-release)
 
 ---
 
@@ -364,13 +363,7 @@ To start the interactive mode, run the following command:
   - Google API Client for Go (`google.golang.org/api/tasks/v1`).
   - Go OAuth2 Library (`golang.org/x/oauth2`).
 
-## 9. Project Documentation
-
-For more detailed information on the design and implementation, see the documents in the following directory:
-
-- [Software Design (`/design`)](./design)
-
-## 10. Running Tests
+## 9. Running Tests
 
 To run the full suite of tests, use the following command from the root of the project:
 
@@ -380,7 +373,7 @@ go test ./...
 
 This command executes all unit and integration tests against a high-fidelity, in-memory mock of the Google Tasks API, ensuring that no real network calls are made and no authentication is required. It also runs the basic E2E tests.
 
-## 11. Homebrew Release
+## 10. Homebrew Release
 
 To release a new version of `gtasks-cli` to Homebrew, follow these steps:
 
