@@ -2,6 +2,58 @@
 
 A command-line interface (CLI) for managing your Google Tasks.
 
+## 0. Installation
+
+### Homebrew
+
+```sh
+brew tap yanicksenn/gtasks-cli
+brew install yanicksenn/gtasks
+gtasks help
+```
+
+## 1. Building and Running
+
+### Prerequisites
+
+*   Go 1.20 or later
+
+### Building
+
+To build the `gtasks` binary, run the following command from the root of the project:
+
+```sh
+go build -o gtasks .
+```
+
+This will place the executable file named `gtasks` in the project root.
+
+### Running
+
+To run the application, first, you need to authenticate with your Google account:
+
+```sh
+./gtasks accounts login
+```
+
+This will open a browser window for you to complete the authentication process.
+
+Once authenticated, you can use the other commands, for example:
+
+```sh
+./gtasks tasklists list
+```
+
+### Running Tests
+
+To run the full suite of tests, use the following command from the root of the project:
+
+```bash
+go test ./...
+```
+
+This command executes all unit and integration tests against a high-fidelity, in-memory mock of the Google Tasks API, ensuring that no real network calls are made and no authentication is required. It also runs the basic E2E tests.
+
 ## Table of Contents
 
 - [1. Authentication](#1-authentication)
@@ -15,8 +67,6 @@ A command-line interface (CLI) for managing your Google Tasks.
 - [6. Examples](#6-examples)
 - [7. Interactive Mode](#7-interactive-mode)
 - [8. Implementation Details](#8-implementation-details)
-- [9. Building and Running](#9-building-and-running)
-- [10. Homebrew Release](#10-homebrew-release)
 
 ---
 
@@ -328,125 +378,3 @@ To start the interactive mode, run the following command:
   - Bubble Tea (`github.com/charmbracelet/bubbletea`) for the interactive TUI.
   - Google API Client for Go (`google.golang.org/api/tasks/v1`).
   - Go OAuth2 Library (`golang.org/x/oauth2`).
-
-## 9. Building and Running
-
-### Prerequisites
-
-*   Go 1.20 or later
-
-### Building
-
-To build the `gtasks` binary, run the following command from the root of the project:
-
-```sh
-go build -o gtasks .
-```
-
-This will place the executable file named `gtasks` in the project root.
-
-### Running
-
-To run the application, first, you need to authenticate with your Google account:
-
-```sh
-./gtasks accounts login
-```
-
-This will open a browser window for you to complete the authentication process.
-
-Once authenticated, you can use the other commands, for example:
-
-```sh
-./gtasks tasklists list
-```
-
-### Running Tests
-
-To run the full suite of tests, use the following command from the root of the project:
-
-```bash
-go test ./...
-```
-
-This command executes all unit and integration tests against a high-fidelity, in-memory mock of the Google Tasks API, ensuring that no real network calls are made and no authentication is required. It also runs the basic E2E tests.
-
-## 10. Homebrew Release
-
-To release a new version of `gtasks-cli` to Homebrew, follow these steps:
-
-### 1. Create a Git Tag
-
-First, create a new Git tag for the release. This tag will be used to identify the specific version of the code to be released.
-
-```sh
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-### 2. Create a Source Archive
-
-Next, create a source archive (tarball) of the tagged release. This archive will be uploaded to GitHub and used by Homebrew to download the source code.
-
-```sh
-git archive --format=tar.gz --output=gtasks-cli-v0.1.0.tar.gz v0.1.0
-```
-
-### 3. Calculate the SHA256 Checksum
-
-Homebrew uses a SHA256 checksum to verify the integrity of the downloaded source archive. Calculate the checksum of the tarball you just created.
-
-```sh
-shasum -a 256 gtasks-cli-v0.1.0.tar.gz
-```
-
-### 4. Create or Update the Homebrew Formula
-
-A Homebrew formula is a Ruby file that tells Homebrew how to install your package. You will need to create a new formula file or update an existing one.
-
-The formula file should be named `gtasks-cli.rb` and should look like this:
-
-```ruby
-class GtasksCli < Formula
-  desc "A CLI for managing Google Tasks"
-  homepage "https://github.com/yanicksenn/gtasks-cli"
-  url "https://github.com/yanicksenn/gtasks-cli/archive/v0.1.0.tar.gz"
-  sha256 "YOUR_SHA256_CHECKSUM_HERE"
-
-  depends_on "go" => :build
-
-  def install
-    system "go", "build", *std_go_args(ldflags: "-s -w"), "."
-  end
-
-  test do
-    system "#{bin}/gtasks", "--help"
-  end
-end
-```
-
-Replace `YOUR_SHA256_CHECKSUM_HERE` with the checksum you calculated in the previous step.
-
-### 5. Create a Homebrew Tap
-
-A Homebrew Tap is a Git repository that contains your formula files. If you don't already have one, you'll need to create a new public GitHub repository named `homebrew-tap`.
-
-### 6. Add the Formula to Your Tap
-
-Once you have a Tap, create a `Formula` directory inside it and move your `gtasks-cli.rb` file into that directory.
-
-```sh
-mkdir -p homebrew-tap/Formula
-mv gtasks-cli.rb homebrew-tap/Formula/
-```
-
-Commit and push the changes to your `homebrew-tap` repository.
-
-### 7. Install the CLI
-
-Users can now install `gtasks-cli` by first tapping your repository and then running the install command:
-
-```sh
-brew tap yanicksenn/tap
-brew install gtasks-cli
-```
