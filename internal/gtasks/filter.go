@@ -9,10 +9,14 @@ import (
 
 // FilterOptions holds the criteria for filtering tasks.
 type FilterOptions struct {
+	// TitleContains filters tasks by title (case-insensitive).
 	TitleContains string
+	// NotesContains filters tasks by notes (case-insensitive).
 	NotesContains string
-	DueBefore     string
-	DueAfter      string
+	// DueBefore filters tasks with a due date before the specified date (e.g., "2025-12-31").
+	DueBefore string
+	// DueAfter filters tasks with a due date after the specified date (e.g., "2025-12-31").
+	DueAfter string
 }
 
 // FilterTasks filters a slice of tasks based on the provided options.

@@ -26,6 +26,8 @@ func getOAuthConfig() *oauth2.Config {
 }
 
 // GetClient returns an authenticated HTTP client for the given user.
+// It retrieves the user's token from the cache, refreshes it if necessary,
+// and returns an HTTP client configured with the token.
 func GetClient(ctx context.Context, user string) (*http.Client, error) {
 	cache, err := loadTokenCache()
 	if err != nil {

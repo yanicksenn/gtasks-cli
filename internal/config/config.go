@@ -27,6 +27,7 @@ func GetConfigPath() (string, error) {
 }
 
 // Load reads the configuration from the config file.
+// If the file does not exist, it returns a default configuration.
 func Load() (*Config, error) {
 	path, err := GetConfigPath()
 	if err != nil {

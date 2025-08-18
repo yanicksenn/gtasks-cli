@@ -78,6 +78,7 @@ func GetOfflineStorePath() (string, error) {
 	return filepath.Join(home, ".config", "gtasks", offlineDataFile), nil
 }
 
+// persist writes the current state of the store to the file system.
 func (s *InMemoryStore) persist() error {
 	if s.path == "" {
 		return nil // Don't persist for a transient store
@@ -89,12 +90,14 @@ func (s *InMemoryStore) persist() error {
 	return os.WriteFile(s.path, data, 0600)
 }
 
+// newID generates a new unique ID for a task or task list.
 func (s *InMemoryStore) newID() string {
 	id := fmt.Sprintf("id%d", s.Data.NextID)
 	s.Data.NextID++
 	return id
 }
 
+// CreateTaskList creates a new task list in the store.
 func (s *InMemoryStore) CreateTaskList(list *tasks.TaskList) (*tasks.TaskList, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -107,6 +110,7 @@ func (s *InMemoryStore) CreateTaskList(list *tasks.TaskList) (*tasks.TaskList, e
 	return newList, s.persist()
 }
 
+// ListTaskLists returns all the task lists in the store.
 func (s *InMemoryStore) ListTaskLists() ([]*tasks.TaskList, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -117,12 +121,14 @@ func (s *InMemoryStore) ListTaskLists() ([]*tasks.TaskList, error) {
 	return lists, nil
 }
 
+// GetTaskList returns a task list from the store by its ID.
 func (s *InMemoryStore) GetTaskList(id string) (*tasks.TaskList, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return s.Data.TaskLists[id], nil
 }
 
+// UpdateTaskList updates a task list in the store.
 func (s *InMemoryStore) UpdateTaskList(id string, list *tasks.TaskList) (*tasks.TaskList, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -131,6 +137,7 @@ func (s *InMemoryStore) UpdateTaskList(id string, list *tasks.TaskList) (*tasks.
 	return existingList, s.persist()
 }
 
+// DeleteTaskList deletes a task list from the store.
 func (s *InMemoryStore) DeleteTaskList(id string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -139,6 +146,7 @@ func (s *InMemoryStore) DeleteTaskList(id string) error {
 	return s.persist()
 }
 
+// CreateTask creates a new task in the store.
 func (s *InMemoryStore) CreateTask(listID string, task *tasks.Task) (*tasks.Task, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -158,12 +166,14 @@ func (s *InMemoryStore) CreateTask(listID string, task *tasks.Task) (*tasks.Task
 	return newTask, s.persist()
 }
 
+// GetTask returns a task from the store by its ID.
 func (s *InMemoryStore) GetTask(listID, taskID string) (*tasks.Task, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return s.Data.Tasks[listID][taskID], nil
 }
 
+// ListTasks returns all the tasks in a given task list.
 func (s *InMemoryStore) ListTasks(listID string) ([]*tasks.Task, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -174,6 +184,7 @@ func (s *InMemoryStore) ListTasks(listID string) ([]*tasks.Task, error) {
 	return tasks, nil
 }
 
+// UpdateTask updates a task in the store.
 func (s *InMemoryStore) UpdateTask(listID, taskID string, task *tasks.Task) (*tasks.Task, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -193,6 +204,7 @@ func (s *InMemoryStore) UpdateTask(listID, taskID string, task *tasks.Task) (*ta
 	return existingTask, s.persist()
 }
 
+// DeleteTask deletes a task from the store.
 func (s *InMemoryStore) DeleteTask(listID, taskID string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()

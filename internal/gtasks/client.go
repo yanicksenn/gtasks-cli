@@ -13,25 +13,8 @@ import (
 	"google.golang.org/api/tasks/v1"
 )
 
-// Client is the interface for interacting with the tasks service, abstracting
-// away the online and offline implementations.
-type Client interface {
-	ListTaskLists(opts ListTaskListsOptions) (*tasks.TaskLists, error)
-	CreateTaskList(opts CreateTaskListOptions) (*tasks.TaskList, error)
-	GetTaskList(opts GetTaskListOptions) (*tasks.TaskList, error)
-	UpdateTaskList(opts UpdateTaskListOptions) (*tasks.TaskList, error)
-	DeleteTaskList(opts DeleteTaskListOptions) error
-
-	ListTasks(opts ListTasksOptions) (*tasks.Tasks, error)
-	CreateTask(opts CreateTaskOptions) (*tasks.Task, error)
-	GetTask(opts GetTaskOptions) (*tasks.Task, error)
-	UpdateTask(opts UpdateTaskOptions) (*tasks.Task, error)
-	CompleteTask(opts CompleteTaskOptions) (*tasks.Task, error)
-	UncompleteTask(opts UncompleteTaskOptions) (*tasks.Task, error)
-	DeleteTask(opts DeleteTaskOptions) error
-}
-
 // onlineClient is a client that interacts with the real Google Tasks API.
+// It implements the Client interface.
 type onlineClient struct {
 	service *tasks.Service
 }

@@ -9,11 +9,15 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// OutputFormat defines the output format for the printer.
 type OutputFormat string
 
 const (
+	// JSONFormat is the JSON output format.
 	JSONFormat OutputFormat = "json"
+	// YAMLFormat is the YAML output format.
 	YAMLFormat OutputFormat = "yaml"
+	// TableFormat is the table output format.
 	TableFormat OutputFormat = "table"
 )
 
@@ -30,7 +34,7 @@ func NewPrinter(out io.Writer, format string, quiet bool) *Printer {
 	switch format {
 	case "json":
 		f = JSONFormat
-	case "yaml":	
+	case "yaml":
 		f = YAMLFormat
 	default:
 		f = TableFormat
@@ -38,6 +42,7 @@ func NewPrinter(out io.Writer, format string, quiet bool) *Printer {
 	return &Printer{out: out, format: f, quiet: quiet}
 }
 
+// PrintTaskLists prints a list of task lists.
 func (p *Printer) PrintTaskLists(lists *tasks.TaskLists) error {
 	switch p.format {
 	case JSONFormat:
@@ -60,6 +65,7 @@ func (p *Printer) PrintTaskLists(lists *tasks.TaskLists) error {
 	}
 }
 
+// PrintTaskList prints a single task list.
 func (p *Printer) PrintTaskList(list *tasks.TaskList) error {
 	switch p.format {
 	case JSONFormat:
@@ -77,6 +83,7 @@ func (p *Printer) PrintTaskList(list *tasks.TaskList) error {
 	}
 }
 
+// PrintTasks prints a list of tasks.
 func (p *Printer) PrintTasks(tasks *tasks.Tasks) error {
 	switch p.format {
 	case JSONFormat:
@@ -103,6 +110,7 @@ func (p *Printer) PrintTasks(tasks *tasks.Tasks) error {
 	}
 }
 
+// PrintTask prints a single task.
 func (p *Printer) PrintTask(task *tasks.Task) error {
 	switch p.format {
 	case JSONFormat:
@@ -123,6 +131,7 @@ func (p *Printer) PrintTask(task *tasks.Task) error {
 	}
 }
 
+// PrintAccounts prints a list of accounts.
 func (p *Printer) PrintAccounts(accounts []string, activeAccount string) error {
 	switch p.format {
 	case JSONFormat:
@@ -149,6 +158,7 @@ func (p *Printer) PrintAccounts(accounts []string, activeAccount string) error {
 	}
 }
 
+// PrintSuccess prints a success message.
 func (p *Printer) PrintSuccess(message string) error {
 	if p.quiet {
 		return nil
@@ -157,6 +167,7 @@ func (p *Printer) PrintSuccess(message string) error {
 	return nil
 }
 
+// PrintDelete prints a delete message.
 func (p *Printer) PrintDelete(resource string, id string) error {
 	if p.quiet {
 		return nil
@@ -164,3 +175,4 @@ func (p *Printer) PrintDelete(resource string, id string) error {
 	fmt.Fprintf(p.out, "Successfully deleted %s: %s\n", resource, id)
 	return nil
 }
+

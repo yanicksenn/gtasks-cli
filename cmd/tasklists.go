@@ -22,16 +22,19 @@ var listTasklistsCmd = &cobra.Command{
 			return err
 		}
 
+		// Get the sort-by flag value
 		sortBy, _ := cmd.Flags().GetString("sort-by")
 		opts := gtasks.ListTaskListsOptions{
 			SortBy: sortBy,
 		}
 
+		// List the task lists
 		lists, err := h.Client.ListTaskLists(opts)
 		if err != nil {
 			return fmt.Errorf("error listing task lists: %w", err)
 		}
 
+		// Print the task lists
 		return h.Printer.PrintTaskLists(lists)
 	},
 }
@@ -46,15 +49,18 @@ var getTasklistCmd = &cobra.Command{
 			return err
 		}
 
+		// Get the task list ID from the arguments
 		opts := gtasks.GetTaskListOptions{
 			TaskListID: args[0],
 		}
 
+		// Get the task list
 		list, err := h.Client.GetTaskList(opts)
 		if err != nil {
 			return fmt.Errorf("error getting task list: %w", err)
 		}
 
+		// Print the task list
 		return h.Printer.PrintTaskList(list)
 	},
 }
@@ -68,16 +74,19 @@ var createTasklistCmd = &cobra.Command{
 			return err
 		}
 
+		// Get the title from the flags
 		title, _ := cmd.Flags().GetString("title")
 		opts := gtasks.CreateTaskListOptions{
 			Title: title,
 		}
 
+		// Create the task list
 		createdList, err := h.Client.CreateTaskList(opts)
 		if err != nil {
 			return fmt.Errorf("error creating task list: %w", err)
 		}
 
+		// Print the created task list
 		return h.Printer.PrintTaskList(createdList)
 	},
 }
@@ -92,19 +101,22 @@ var updateTasklistCmd = &cobra.Command{
 			return err
 		}
 
+		// Get the title from the flags
 		title, _ := cmd.Flags().GetString("title")
-	opts := gtasks.UpdateTaskListOptions{
-		TaskListID: args[0],
-		Title:	    title,
-	}
+		opts := gtasks.UpdateTaskListOptions{
+			TaskListID: args[0],
+			Title:	    title,
+		}
 
-	updatedList, err := h.Client.UpdateTaskList(opts)
-	if err != nil {
-		return fmt.Errorf("error updating task list: %w", err)
-	}
+		// Update the task list
+		updatedList, err := h.Client.UpdateTaskList(opts)
+		if err != nil {
+			return fmt.Errorf("error updating task list: %w", err)
+		}
 
-	return h.Printer.PrintSuccess(fmt.Sprintf("Successfully updated task list: %s (%s)", updatedList.Title, updatedList.Id))
-},
+		// Print a success message
+		return h.Printer.PrintSuccess(fmt.Sprintf("Successfully updated task list: %s (%s)", updatedList.Title, updatedList.Id))
+	},
 }
 
 var deleteTasklistCmd = &cobra.Command{
@@ -117,15 +129,18 @@ var deleteTasklistCmd = &cobra.Command{
 			return err
 		}
 
+		// Get the task list ID from the arguments
 		opts := gtasks.DeleteTaskListOptions{
 			TaskListID: args[0],
 		}
 
+		// Delete the task list
 		err = h.Client.DeleteTaskList(opts)
 		if err != nil {
 			return fmt.Errorf("error deleting task list: %w", err)
 		}
 
+		// Print a success message
 		return h.Printer.PrintDelete("task list", args[0])
 	},
 }

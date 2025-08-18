@@ -8,15 +8,15 @@ import (
 	"golang.org/x/oauth2"
 )
 
-const (
-	TokenFile = "gtasks-token.json"
-)
+// TokenFile is the name of the file where the OAuth2 tokens are stored.
+const TokenFile = "gtasks-token.json"
 
 // TokenCache represents the structure of the credentials file.
 type TokenCache struct {
 	Tokens map[string]*oauth2.Token `json:"tokens"`
 }
 
+// getTokenCachePath returns the path to the token cache file.
 func getTokenCachePath() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -25,6 +25,7 @@ func getTokenCachePath() (string, error) {
 	return filepath.Join(home, ".config", TokenFile), nil
 }
 
+// loadTokenCache loads the token cache from the file system.
 func loadTokenCache() (*TokenCache, error) {
 	path, err := getTokenCachePath()
 	if err != nil {
@@ -47,11 +48,13 @@ func loadTokenCache() (*TokenCache, error) {
 	return &cache, nil
 }
 
+// save saves the token for the given user to the cache.
 func (tc *TokenCache) save(user string, token *oauth2.Token) error {
 	tc.Tokens[user] = token
 	return tc.saveAll()
 }
 
+// saveAll saves the entire token cache to the file system.
 func (tc *TokenCache) saveAll() error {
 	path, err := getTokenCachePath()
 	if err != nil {

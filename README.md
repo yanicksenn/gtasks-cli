@@ -8,9 +8,34 @@ A command-line interface (CLI) for managing your Google Tasks.
 
 ```sh
 brew tap yanicksenn/gtasks-cli
-brew install yanicksenn/gtasks
-gtasks help
+brew install yanicksenn/gtasks-cli
+gtasks-cli help
 ```
+
+### Go
+
+```sh
+go install github.com/yanicksenn/gtasks-cli@latest
+gtasks-cli help
+```
+
+## Configuration
+
+`gtasks-cli` stores its configuration in a file named `config.json` in the following locations:
+
+*   **Linux:** `~/.config/gtasks/config.json`
+*   **macOS:** `~/Library/Application Support/gtasks/config.json`
+*   **Windows:** `%APPDATA%\gtasks\config.json`
+
+The configuration file has the following structure:
+
+```json
+{
+  "active_account": "user@example.com"
+}
+```
+
+*   `active_account`: The email address of the currently active Google account.
 
 ## 1. Building and Running
 
@@ -66,7 +91,8 @@ This command executes all unit and integration tests against a high-fidelity, in
   - [Task Management](#task-management)
 - [6. Examples](#6-examples)
 - [7. Interactive Mode](#7-interactive-mode)
-- [8. Implementation Details](#8-implementation-details)
+- [8. Error Handling](#8-error-handling)
+- [9. Implementation Details](#9-implementation-details)
 
 ---
 
@@ -95,7 +121,21 @@ The CLI follows a `gtasks <resource> <action> [flags]` pattern.
 
 `gtasks` supports a full offline mode. By using the global `--offline` flag, you can manage your tasks and task lists without an internet connection. All changes are saved to a local file (`~/.config/gtasks/offline.json`).
 
-**Note:** Synchronization must be handled manually. This tool does not currently provide a `sync` command.
+### Syncing Offline Changes
+
+Synchronization must be handled manually. To sync your offline changes, you need to be online and run the commands again without the `--offline` flag. For example, if you created a new task offline:
+
+```sh
+./gtasks tasks create --title "My new task" --offline
+```
+
+To sync this task with Google Tasks, run the same command again without the `--offline` flag:
+
+```sh
+./gtasks tasks create --title "My new task"
+```
+
+This will create the task in your Google Tasks. Similarly, for other commands like `update` and `delete`, you need to re-run them without the `--offline` flag to sync the changes.
 
 ---
 
@@ -104,6 +144,7 @@ The CLI follows a `gtasks <resource> <action> [flags]` pattern.
 - **Account:** Refers to the Google Account you authenticate with via the SSO sign-in flow. The CLI can cache multiple accounts, but only one is active at a time.
 - **TaskList:** A container for your tasks. A user can have multiple task lists to organize different areas of their life (e.g., "Work," "Groceries," "Personal Projects"). Each task list has a unique ID.
 - **Task:** A single to-do item that exists within a specific TaskList. It has properties like a title, notes, due date, and a completion status. Each task has a unique ID.
+- **@default TaskList:** This is a special identifier that refers to the user's default task list. Google Tasks automatically creates a default list for every user, which is typically named "My Tasks". `gtasks-cli` uses this as the default tasklist for all task-related commands unless a specific tasklist is provided with the `--tasklist` flag.
 
 ---
 
@@ -207,7 +248,7 @@ Creates a new task in a task list.
 
 #### `gtasks tasks update`
 Updates an existing task.
-- **Usage:** `gtasks tasks update <task_id> [--tasklist <tasklist_id>] [flags]`
+- **Usage:** `gtasks tasks update <task_id> [--tasklist <task_id>] [flags]`
 - **Arguments:**
   - `<task_id>` (required): The ID of the task to update.
 - **Flags:**
@@ -363,14 +404,34 @@ To start the interactive mode, run the following command:
 ./gtasks interactive --tasklist <tasklist_id>
 ```
 
+### Features
+
+*   **View Tasks:** See all your tasks in a list.
+*   **Add Tasks:** Press `a` to add a new task.
+*   **Edit Tasks:** Press `e` to edit the selected task.
+*   **Delete Tasks:** Press `d` to delete the selected task.
+*   **Complete/Uncomplete Tasks:** Press `space` to toggle the completion status of the selected task.
+
 ### Keybindings
 
 -   `q`, `ctrl+c`: Quit the application.
 -   `up`, `k`: Move the cursor up.
 -   `down`, `j`: Move the cursor down.
+-   `a`: Add a new task.
+-   `e`: Edit the selected task.
+-   `d`: Delete the selected task.
 -   `space`: Toggle the completion status of the selected task.
 
-## 8. Implementation Details
+## 8. Error Handling
+
+`gtasks-cli` is designed to provide clear and actionable feedback when errors occur. Here's how it handles common issues:
+
+*   **Network Errors:** If the CLI cannot connect to the Google Tasks API, it will print an error message and exit. If you are offline, you can use the `--offline` flag to work with a local copy of your tasks.
+*   **Authentication Errors:** If your credentials have expired or are invalid, the CLI will prompt you to log in again.
+*   **API Errors:** If the Google Tasks API returns an error, the CLI will print the error message from the API and exit.
+*   **Not Found Errors:** If you try to access a resource that does not exist (e.g., a task or tasklist with an invalid ID), the CLI will print a "not found" error and exit.
+
+## 9. Implementation Details
 
 - **Language:** Go
 - **Libraries:**

@@ -11,6 +11,6 @@ class GtasksCli < Formula
   end
 
   test do
-    system "#{bin}/gtasks", "--help"
+    system "#{bin}/gtasks-cli", "--help"
   end
 end

@@ -20,6 +20,11 @@ const (
 )
 
 // LoginViaWebFlow orchestrates the web-based authentication process.
+// It starts a local server to handle the OAuth2 callback, opens the user's
+// browser to the authentication URL, and waits for the user to grant
+// permission. Once the user has granted permission, the function exchanges
+// the authorization code for a token, retrieves the user's email address,
+// and saves the token to the cache.
 func LoginViaWebFlow(ctx context.Context) (string, error) {
 	conf := getOAuthConfig()
 
@@ -115,4 +120,5 @@ func LoginViaWebFlow(ctx context.Context) (string, error) {
 
 	return userInfo.Email, nil
 }
+
 

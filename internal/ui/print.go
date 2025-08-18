@@ -8,6 +8,7 @@ import (
 )
 
 // PrintTaskListProperty prints a specific property of a task list to stdout.
+// If quiet is true, it does nothing.
 func PrintTaskListProperty(list *tasks.TaskList, property string, quiet bool) error {
 	if quiet {
 		return nil
@@ -26,6 +27,7 @@ func PrintTaskListProperty(list *tasks.TaskList, property string, quiet bool) er
 }
 
 // PrintTaskProperty prints a specific property of a task to stdout.
+// If quiet is true, it does nothing.
 func PrintTaskProperty(task *tasks.Task, property string, quiet bool) error {
 	if quiet {
 		return nil
