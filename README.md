@@ -8,8 +8,8 @@ A command-line interface (CLI) for managing your Google Tasks.
 
 ```sh
 brew tap yanicksenn/gtasks-cli
-brew install yanicksenn/gtasks-cli
-gtasks-cli help
+brew install gtasks-cli
+gtasks help
 ```
 
 ### Go
